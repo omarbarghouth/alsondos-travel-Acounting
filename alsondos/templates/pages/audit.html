@@ -1,0 +1,111 @@
+{% extends "layouts/base.html" %}
+{% block title %}Audit Log — Alsondos ERP{% endblock %}
+{% block breadcrumb %}Audit Log{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Audit Log</h1>
+    <p class="page-subtitle">System activity trail — all user actions recorded</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn-outline-custom"><i class="fas fa-download me-1"></i>Export Log</button>
+    <button class="btn-outline-custom"><i class="fas fa-filter me-1"></i>Filter</button>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ logs|length }}</div>
+      <div class="stat-label">Total Events</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card blue">
+      <div class="stat-value">{{ logs|selectattr('item','eq','Transaction')|list|length }}</div>
+      <div class="stat-label">Transactions</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card green">
+      <div class="stat-value">{{ logs|selectattr('item','eq','Payment')|list|length }}</div>
+      <div class="stat-label">Payments</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-value">3</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-custom">
+    <div class="card-title"><i class="fas fa-shield-alt"></i> System Activity Log</div>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="tableSearch" placeholder="&#128269;  Search logs..."/>
+    <select>
+      <option>All Users</option>
+      <option>Ahmad Al-Rashid</option>
+      <option>Sara Hassan</option>
+      <option>Khaled Nour</option>
+      <option>Omar Ziad</option>
+    </select>
+    <select>
+      <option>All Actions</option>
+      <option>Transaction</option>
+      <option>Payment</option>
+      <option>Statement</option>
+    </select>
+    <input type="date"/>
+    <input type="date"/>
+  </div>
+  <div class="table-wrapper">
+    <table class="erp-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Module</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="color:var(--text-muted); font-size:12px;">{{ log.id }}</td>
+          <td style="font-size:13px; white-space:nowrap; color:var(--text-muted);">
+            <i class="fas fa-clock me-1" style="color:var(--accent);"></i>{{ log.timestamp }}
+          </td>
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; height:28px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">
+                {{ log.user[0] }}
+              </div>
+              <span style="font-size:13px; font-weight:600;">{{ log.user }}</span>
+            </div>
+          </td>
+          <td style="font-size:13px;">{{ log.action }}</td>
+          <td>
+            <span style="background:{% if log.item == 'Transaction' %}rgba(59,130,246,0.1); color:var(--info){% elif log.item == 'Payment' %}rgba(16,185,129,0.1); color:var(--success){% else %}rgba(232,160,32,0.1); color:var(--accent){% endif %}; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">
+              {{ log.item }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination-custom">
+    <div class="pagination-info">{{ logs|length }} events logged</div>
+    <div class="pagination-btns">
+      <button class="page-btn active">1</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends "layouts/base.html" %}
+{% block title %}Dashboard — Alsondos ERP{% endblock %}
+{% block breadcrumb %}<span>Dashboard</span>{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      {% if role == 'admin' %}Admin Dashboard
+      {% elif role == 'accountant' %}Accountant Dashboard
+      {% else %}My Dashboard
+      {% endif %}
+    </h1>
+    <p class="page-subtitle">Welcome back, {{ session.get('name') }} — Here's what's happening today</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{{ url_for('transactions.new') }}" class="btn-accent">
+      <i class="fas fa-plus"></i> New Transaction
+    </a>
+    <a href="{{ url_for('payments.new') }}" class="btn-outline-custom">
+      <i class="fas fa-money-bill-wave"></i> Record Payment
+    </a>
+  </div>
+</div>
+
+<!-- ── ADMIN & ACCOUNTANT STATS ── -->
+{% if role in ['admin', 'accountant'] %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon gold"><i class="fas fa-dollar-sign"></i></div>
+      <div class="stat-value" data-value="{{ stats.total_sales }}" data-currency="1">${{ "{:,.0f}".format(stats.total_sales) }}</div>
+      <div class="stat-label">Total Sales (YTD)</div>
+      <div class="stat-change up"><i class="fas fa-arrow-up me-1"></i>{{ stats.monthly_growth }}% this month</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card green">
+      <div class="stat-icon green"><i class="fas fa-wallet"></i></div>
+      <div class="stat-value">${{ "{:,.0f}".format(stats.total_collected) }}</div>
+      <div class="stat-label">Total Collected</div>
+      <div class="stat-change up"><i class="fas fa-check me-1"></i>Payments received</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card red">
+      <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="stat-value">${{ "{:,.0f}".format(stats.total_balance) }}</div>
+      <div class="stat-label">Outstanding Balance</div>
+      <div class="stat-change down"><i class="fas fa-clock me-1"></i>Awaiting collection</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="fas fa-shipping-fast"></i></div>
+      <div class="stat-value">{{ stats.pending_deliveries }}</div>
+      <div class="stat-label">Pending Deliveries</div>
+      <div class="stat-change"><a href="{{ url_for('delivery.index') }}" style="color:var(--info); text-decoration:none;">View all →</a></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── EMPLOYEE STATS ── -->
+{% if role == 'employee' %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon gold"><i class="fas fa-ticket-alt"></i></div>
+      <div class="stat-value">5</div>
+      <div class="stat-label">My Transactions</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card green">
+      <div class="stat-icon green"><i class="fas fa-coins"></i></div>
+      <div class="stat-value">$2,115</div>
+      <div class="stat-label">My Commission</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+      <div class="stat-value">2</div>
+      <div class="stat-label">Pending Deliveries</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card red">
+      <div class="stat-icon red"><i class="fas fa-chart-line"></i></div>
+      <div class="stat-value">$42,300</div>
+      <div class="stat-label">My Total Sales</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <!-- Monthly Sales Chart -->
+  {% if role in ['admin', 'accountant'] %}
+  <div class="col-12 col-lg-8">
+    <div class="card">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-chart-bar"></i> Monthly Sales Overview</div>
+        <span style="font-size:12px; color:var(--text-muted);">Last 6 months</span>
+      </div>
+      <div style="padding:24px;">
+        <div style="display:flex; gap:8px; align-items:flex-end; height:160px; border-bottom:2px solid var(--border); padding-bottom:0;">
+          {% set max_val = 85450 %}
+          {% for m in stats.monthly_sales %}
+          {% set pct = ((m.amount / max_val) * 100)|int %}
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+            <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">${{ (m.amount/1000)|int }}k</div>
+            <div class="chart-bar {% if loop.last %}current{% endif %}" data-pct="{{ pct }}"
+                 style="width:100%; border-radius:4px 4px 0 0; height:{{ pct }}%; background:{% if loop.last %}linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%){% else %}linear-gradient(180deg, var(--accent) 0%, var(--accent-light) 100%){% endif %};"></div>
+          </div>
+          {% endfor %}
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          {% for m in stats.monthly_sales %}
+          <div style="flex:1; text-align:center; font-size:11px; color:var(--text-muted); font-weight:600;">{{ m.month }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Top Employees -->
+  {% if role == 'admin' %}
+  <div class="col-12 col-lg-4">
+    <div class="card">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-medal"></i> Top Employees</div>
+      </div>
+      <div style="padding:16px 24px;">
+        {% for emp in stats.top_employees %}
+        <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);">
+          <div style="width:36px; height:36px; border-radius:50%; background:{% if loop.index == 1 %}var(--accent){% elif loop.index == 2 %}var(--primary){% else %}var(--success){% endif %}; color:{% if loop.index == 1 %}var(--primary){% else %}#fff{% endif %}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0;">
+            {{ loop.index }}
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:14px; font-weight:600; color:var(--text);">{{ emp.name }}</div>
+            <div class="progress-custom">
+              <div class="progress-fill" style="width:{{ ((emp.sales / 50000)*100)|int }}%;"></div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:13px; font-weight:700; color:var(--primary);">${{ "{:,}".format(emp.sales) }}</div>
+            <div style="font-size:11px; color:var(--success);">+${{ "{:,}".format(emp.commission) }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Transactions -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-ticket-alt"></i> Recent Transactions</div>
+        <a href="{{ url_for('transactions.index') }}" class="btn-outline-custom" style="padding:7px 14px; font-size:13px;">
+          View All <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+      <div class="table-wrapper">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Customer</th>
+              <th>Company</th>
+              <th>Route</th>
+              <th>Departure</th>
+              <th>Sell Price</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in transactions[:6] %}
+            <tr>
+              <td style="font-weight:700; color:var(--primary);">#{{ t.id }}</td>
+              <td>
+                <div style="font-weight:600;">{{ t.customer }}</div>
+                <div style="font-size:12px; color:var(--text-muted);">via {{ t.supplier }}</div>
+              </td>
+              <td>{{ t.company }}</td>
+              <td>
+                <span style="font-weight:600;">{{ t.from_city }}</span>
+                <i class="fas fa-arrow-right mx-1" style="font-size:10px; color:var(--accent);"></i>
+                <span style="font-weight:600;">{{ t.to_city }}</span>
+              </td>
+              <td>{{ t.departure }}</td>
+              <td style="font-weight:700; color:var(--primary);">${{ "{:.2f}".format(t.sell_price) }}</td>
+              <td>
+                <span class="badge-status badge-{{ t.status.lower() }}">{{ t.status }}</span>
+              </td>
+              <td>
+                <a href="{{ url_for('transactions.view', tid=t.id) }}" class="btn-sm-icon view"><i class="fas fa-eye"></i></a>
+                <a href="{{ url_for('transactions.edit', tid=t.id) }}" class="btn-sm-icon edit"><i class="fas fa-edit"></i></a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unpaid Companies (Admin only) -->
+  {% if role == 'admin' %}
+  <div class="col-12 col-md-6">
+    <div class="card">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-exclamation-circle"></i> Companies with Balance</div>
+        <a href="{{ url_for('statements.index') }}" style="font-size:12px; color:var(--accent); text-decoration:none;">View Statements →</a>
+      </div>
+      <div style="padding:0 24px 8px;">
+        {% for c in companies %}
+        {% if c.balance > 0 %}
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:14px; font-weight:600; color:var(--text);">{{ c.name }}</div>
+            <div style="font-size:12px; color:var(--text-muted);">{{ c.contact }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:15px; font-weight:800; color:var(--danger);">${{ "{:,.2f}".format(c.balance) }}</div>
+            <a href="{{ url_for('statements.company_statement', cid=c.id) }}" style="font-size:11px; color:var(--info); text-decoration:none;">Statement →</a>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Activity -->
+  <div class="col-12 col-md-{% if role == 'admin' %}6{% else %}12{% endif %}">
+    <div class="card">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-history"></i> Recent Activity</div>
+      </div>
+      <div style="padding:8px 24px 16px;">
+        {% for log in stats.recent_activity %}
+        <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); align-items:flex-start;">
+          <div style="width:32px; height:32px; border-radius:50%; background:rgba(10,37,64,0.08); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; color:var(--primary);">
+            <i class="fas fa-{{ 'ticket-alt' if 'Transaction' in log.item else 'money-bill-wave' if 'Payment' in log.item else 'file-invoice' }}"></i>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:600; color:var(--text);">{{ log.action }}</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+              <i class="fas fa-user me-1"></i>{{ log.user }} &nbsp;·&nbsp; {{ log.timestamp }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ title }} — Alsondos ERP{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('transactions.index') }}" style="color:var(--text-muted); text-decoration:none;">Transactions</a>
+  &rsaquo; <span>{{ title }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ title }}</h1>
+    <p class="page-subtitle">Fill in all required ticket and booking details</p>
+  </div>
+  <a href="{{ url_for('transactions.index') }}" class="btn-outline-custom">
+    <i class="fas fa-arrow-left"></i> Back to Transactions
+  </a>
+</div>
+
+<form method="POST">
+  <div class="row g-3">
+    <!-- Section 1: Parties -->
+    <div class="col-12">
+      <div class="card mb-0">
+        <div class="card-header-custom">
+          <div class="card-title"><i class="fas fa-users"></i> Booking Parties</div>
+        </div>
+        <div style="padding:24px;">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label-custom">Supplier / Airline <span style="color:var(--danger);">*</span></label>
+              <select class="form-control-custom" name="supplier" required>
+                <option value="">Select Supplier</option>
+                {% for s in suppliers %}
+                <option {% if transaction and transaction.supplier == s.name %}selected{% endif %} value="{{ s.name }}">{{ s.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-custom">Company / Client <span style="color:var(--danger);">*</span></label>
+              <select class="form-control-custom" name="company" required>
+                <option value="">Select Company</option>
+                {% for c in companies %}
+                <option {% if transaction and transaction.company == c.name %}selected{% endif %} value="{{ c.name }}">{{ c.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-custom">Customer Name <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="text" name="customer" placeholder="Full passenger name"
+                     value="{{ transaction.customer if transaction else '' }}" required/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Route -->
+    <div class="col-12">
+      <div class="card mb-0">
+        <div class="card-header-custom">
+          <div class="card-title"><i class="fas fa-route"></i> Flight Route</div>
+        </div>
+        <div style="padding:24px;">
+          <div class="row g-3">
+            <div class="col-12 col-md-3">
+              <label class="form-label-custom">From City <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="text" name="from_city" placeholder="e.g. Amman"
+                     value="{{ transaction.from_city if transaction else '' }}" required/>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label-custom">To City <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="text" name="to_city" placeholder="e.g. Dubai"
+                     value="{{ transaction.to_city if transaction else '' }}" required/>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label-custom">Departure Date <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="date" name="departure"
+                     value="{{ transaction.departure if transaction else '' }}" required/>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label-custom">Return Date</label>
+              <input class="form-control-custom" type="date" name="return_date"
+                     value="{{ transaction.return_date if transaction else '' }}"/>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-custom">Buy From</label>
+              <select class="form-control-custom" name="buy_from">
+                <option value="Direct">Direct</option>
+                <option value="GDS">GDS</option>
+                <option value="Consolidator">Consolidator</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-custom">Return Supplier</label>
+              <select class="form-control-custom" name="return_supplier">
+                <option value="">Same as Outbound</option>
+                {% for s in suppliers %}
+                <option value="{{ s.name }}">{{ s.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-custom">Status <span style="color:var(--danger);">*</span></label>
+              <select class="form-control-custom" name="status" required>
+                <option value="Pending">Pending</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Pricing -->
+    <div class="col-12 col-md-6">
+      <div class="card mb-0">
+        <div class="card-header-custom">
+          <div class="card-title"><i class="fas fa-dollar-sign"></i> Pricing</div>
+        </div>
+        <div style="padding:24px;">
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label-custom">Buy Price (USD) <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="number" name="buy_price" step="0.01" placeholder="0.00"
+                     value="{{ transaction.buy_price if transaction else '' }}" id="buyPrice" required/>
+            </div>
+            <div class="col-6">
+              <label class="form-label-custom">Sell Price (USD) <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="number" name="sell_price" step="0.01" placeholder="0.00"
+                     value="{{ transaction.sell_price if transaction else '' }}" id="sellPrice" required/>
+            </div>
+            <div class="col-12">
+              <div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:8px; padding:12px 16px;">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Profit Margin</div>
+                <div id="profitDisplay" style="font-size:20px; font-weight:800; color:var(--success); margin-top:4px;">$0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Notes -->
+    <div class="col-12 col-md-6">
+      <div class="card mb-0">
+        <div class="card-header-custom">
+          <div class="card-title"><i class="fas fa-sticky-note"></i> Notes</div>
+        </div>
+        <div style="padding:24px;">
+          <textarea class="form-control-custom" name="notes" rows="5"
+                    placeholder="Additional notes, special requests, booking references...">{{ transaction.notes if transaction else '' }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="col-12">
+      <div style="display:flex; gap:12px; justify-content:flex-end;">
+        <a href="{{ url_for('transactions.index') }}" class="btn-outline-custom">Cancel</a>
+        <button type="submit" class="btn-accent">
+          <i class="fas fa-save me-1"></i>
+          {{ 'Update Transaction' if transaction else 'Create Transaction' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function updateProfit() {
+    const buy = parseFloat(document.getElementById('buyPrice').value) || 0;
+    const sell = parseFloat(document.getElementById('sellPrice').value) || 0;
+    const profit = sell - buy;
+    const el = document.getElementById('profitDisplay');
+    el.textContent = '$' + profit.toFixed(2);
+    el.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+  }
+  document.getElementById('buyPrice').addEventListener('input', updateProfit);
+  document.getElementById('sellPrice').addEventListener('input', updateProfit);
+  updateProfit();
+</script>
+{% endblock %}
