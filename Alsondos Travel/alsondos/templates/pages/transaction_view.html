@@ -1,0 +1,95 @@
+{% extends "layouts/base.html" %}
+{% block title %}Transaction #{{ transaction.id }} — Alsondos ERP{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('transactions.index') }}" style="color:var(--text-muted); text-decoration:none;">Transactions</a>
+  &rsaquo; <span>#{{ transaction.id }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Transaction #{{ transaction.id }}</h1>
+    <p class="page-subtitle">{{ transaction.customer }} &nbsp;·&nbsp; {{ transaction.from_city }} → {{ transaction.to_city }}</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="{{ url_for('transactions.edit', tid=transaction.id) }}" class="btn-outline-custom"><i class="fas fa-edit"></i> Edit</a>
+    <a href="{{ url_for('invoices.print_invoice', tid=transaction.id) }}" class="btn-accent"><i class="fas fa-file-invoice"></i> Generate Invoice</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-md-8">
+    <div class="card">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-info-circle"></i> Transaction Details</div>
+        <span class="badge-status badge-{{ transaction.status.lower() }}">{{ transaction.status }}</span>
+      </div>
+      <div style="padding:24px;">
+        <div class="row g-3">
+          {% set fields = [
+            ('Supplier', transaction.supplier),
+            ('Company/Client', transaction.company),
+            ('Customer Name', transaction.customer),
+            ('From City', transaction.from_city),
+            ('To City', transaction.to_city),
+            ('Departure Date', transaction.departure),
+            ('Return Date', transaction.return_date),
+            ('Buy From', transaction.buy_from),
+            ('Return Supplier', transaction.return_supplier),
+            ('Employee', transaction.employee),
+            ('Created At', transaction.created_at),
+          ] %}
+          {% for label, value in fields %}
+          <div class="col-6 col-md-4">
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">{{ label }}</div>
+            <div style="font-size:15px; font-weight:600; color:var(--text); margin-top:4px;">{{ value or '—' }}</div>
+          </div>
+          {% endfor %}
+          {% if transaction.notes %}
+          <div class="col-12">
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Notes</div>
+            <div style="font-size:14px; color:var(--text); margin-top:4px; padding:12px; background:var(--bg); border-radius:8px;">{{ transaction.notes }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card mb-3">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-dollar-sign"></i> Pricing</div>
+      </div>
+      <div style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">Buy Price</span>
+          <span style="font-weight:700;">${{ "{:.2f}".format(transaction.buy_price) }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">Sell Price</span>
+          <span style="font-weight:700; color:var(--primary);">${{ "{:.2f}".format(transaction.sell_price) }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:14px 0; background:rgba(16,185,129,0.06); border-radius:8px; padding:14px; margin-top:8px;">
+          <span style="font-weight:700; color:var(--success);">Profit</span>
+          <span style="font-weight:800; font-size:18px; color:var(--success);">${{ "{:.2f}".format(transaction.sell_price - transaction.buy_price) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header-custom">
+        <div class="card-title"><i class="fas fa-file-alt"></i> Documents</div>
+      </div>
+      <div style="padding:16px 24px; display:flex; flex-direction:column; gap:8px;">
+        <a href="{{ url_for('invoices.print_invoice', tid=transaction.id) }}" class="btn-outline-custom" style="justify-content:center;">
+          <i class="fas fa-file-invoice"></i> View Invoice
+        </a>
+        <button class="btn-outline-custom" style="justify-content:center;">
+          <i class="fas fa-print"></i> Print Ticket
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

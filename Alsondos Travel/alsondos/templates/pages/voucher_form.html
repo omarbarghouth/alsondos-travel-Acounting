@@ -1,0 +1,117 @@
+{% extends "layouts/base.html" %}
+{% block title %}New Hotel Voucher — Alsondos ERP{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('vouchers.index') }}" style="color:var(--text-muted); text-decoration:none;">Vouchers</a>
+  &rsaquo; <span>New Voucher</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Create Hotel Voucher</h1>
+    <p class="page-subtitle">Fill in accommodation details to generate a professional voucher</p>
+  </div>
+  <a href="{{ url_for('vouchers.index') }}" class="btn-outline-custom"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<form method="POST">
+  <div class="row g-3">
+    <div class="col-12 col-md-7">
+      <div class="card">
+        <div class="card-header-custom">
+          <div class="card-title"><i class="fas fa-hotel"></i> Accommodation Details</div>
+        </div>
+        <div style="padding:24px;">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label-custom">Hotel Name <span style="color:var(--danger);">*</span></label>
+              <select class="form-control-custom" name="hotel" required>
+                <option value="">Select Hotel</option>
+                {% for h in hotels %}
+                <option value="{{ h.name }}">{{ h.name }} — {{ h.city }} ({{ h.stars }}★)</option>
+                {% endfor %}
+                <option value="Other">Other (Enter Manually)</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom">Guest Full Name <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="text" name="guest" placeholder="As it appears on passport" required/>
+            </div>
+            <div class="col-6">
+              <label class="form-label-custom">Check-In Date <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="date" name="checkin" required/>
+            </div>
+            <div class="col-6">
+              <label class="form-label-custom">Check-Out Date <span style="color:var(--danger);">*</span></label>
+              <input class="form-control-custom" type="date" name="checkout" required/>
+            </div>
+            <div class="col-4">
+              <label class="form-label-custom">No. of Rooms</label>
+              <input class="form-control-custom" type="number" name="rooms" value="1" min="1"/>
+            </div>
+            <div class="col-4">
+              <label class="form-label-custom">Room Type</label>
+              <select class="form-control-custom" name="room_type">
+                <option>Standard</option>
+                <option>Deluxe</option>
+                <option>Suite</option>
+                <option>Superior</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label class="form-label-custom">Meal Plan</label>
+              <select class="form-control-custom" name="meal">
+                <option>BB (Bed & Breakfast)</option>
+                <option>HB (Half Board)</option>
+                <option>FB (Full Board)</option>
+                <option>AI (All Inclusive)</option>
+                <option>RO (Room Only)</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom">Company / Agent</label>
+              <select class="form-control-custom" name="company">
+                <option value="">Select Company</option>
+                {% for c in companies %}
+                <option value="{{ c.name }}">{{ c.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom">Special Requests / Notes</label>
+              <textarea class="form-control-custom" name="notes" rows="3" placeholder="Late check-in, room preferences, dietary requirements..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-5">
+      <div class="card">
+        <div class="card-header-custom">
+          <div class="card-title"><i class="fas fa-eye"></i> Voucher Preview</div>
+        </div>
+        <div style="padding:20px; background:var(--bg);">
+          <div style="background:#fff; border-radius:10px; padding:20px; border:2px dashed var(--border);">
+            <div style="text-align:center; margin-bottom:16px;">
+              <img src="{{ url_for('static', filename='images/logo.png') }}" style="height:40px;"/>
+              <div style="font-size:18px; font-weight:800; color:var(--primary); margin-top:8px;">HOTEL VOUCHER</div>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:2;">
+              <div><strong>Hotel:</strong> [Selected Hotel]</div>
+              <div><strong>Guest:</strong> [Guest Name]</div>
+              <div><strong>Check-In:</strong> [Date]</div>
+              <div><strong>Check-Out:</strong> [Date]</div>
+              <div><strong>Rooms:</strong> [Count] × [Type]</div>
+              <div><strong>Meal:</strong> [Plan]</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px 20px; display:flex; flex-direction:column; gap:8px;">
+          <button type="submit" class="btn-accent"><i class="fas fa-file-alt me-1"></i>Generate Voucher</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
