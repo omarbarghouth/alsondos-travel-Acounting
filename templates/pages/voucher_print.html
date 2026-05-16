@@ -1,0 +1,106 @@
+{% extends "layouts/base.html" %}
+{% block title %}Voucher — {{ data.ref or 'VCH' }}{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('vouchers.index') }}" style="color:var(--text-muted); text-decoration:none;">Vouchers</a>
+  &rsaquo; <span>{{ data.ref or 'Voucher' }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="no-print page-header" style="margin-bottom:20px;">
+  <div>
+    <h1 class="page-title">Hotel Voucher</h1>
+    <p class="page-subtitle">{{ data.ref or 'VCH-0001' }}</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="{{ url_for('vouchers.index') }}" class="btn-outline-custom no-print"><i class="fas fa-arrow-left"></i> Back</a>
+    <button onclick="window.print()" class="btn-accent no-print"><i class="fas fa-print me-1"></i>Print Voucher</button>
+  </div>
+</div>
+
+<div class="document-paper">
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="doc-logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alsondos Travel"/>
+      <div style="margin-top:8px; font-size:12px; color:var(--text-muted);">Alsondos Travel & Tourism</div>
+      <div style="font-size:12px; color:var(--text-muted);">Amman, Jordan</div>
+      <div style="font-size:12px; color:var(--text-muted);">Tel: +962-6-XXX-XXXX</div>
+    </div>
+    <div class="doc-info">
+      <div class="doc-type">HOTEL VOUCHER</div>
+      <div class="doc-number">Ref: {{ data.ref or 'VCH-0001' }}</div>
+      <div style="margin-top:12px; background:var(--primary); color:#fff; padding:8px 16px; border-radius:8px; font-size:13px;">
+        <i class="fas fa-shield-alt me-2" style="color:var(--accent-light);"></i>CONFIRMED RESERVATION
+      </div>
+    </div>
+  </div>
+
+  <!-- Hotel & Guest Info -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:28px;">
+    <div style="background:var(--bg); border-radius:10px; padding:20px;">
+      <div class="doc-party-label"><i class="fas fa-hotel me-1"></i>Hotel Details</div>
+      <div class="doc-party-name">{{ data.hotel }}</div>
+      <div class="doc-party-detail"><i class="fas fa-star me-1" style="color:var(--accent);"></i>5 Star Hotel</div>
+      <div class="doc-party-detail"><i class="fas fa-map-marker-alt me-1"></i>Amman, Jordan</div>
+    </div>
+    <div style="background:var(--bg); border-radius:10px; padding:20px;">
+      <div class="doc-party-label"><i class="fas fa-user me-1"></i>Guest Information</div>
+      <div class="doc-party-name">{{ data.guest }}</div>
+      <div class="doc-party-detail">Via: {{ data.company or 'Alsondos Travel' }}</div>
+    </div>
+  </div>
+
+  <!-- Reservation Details Table -->
+  <table class="doc-table">
+    <thead>
+      <tr>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Nights</th>
+        <th>Rooms</th>
+        <th>Room Type</th>
+        <th>Meal Plan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:700; font-size:15px;">{{ data.checkin }}</td>
+        <td style="font-weight:700; font-size:15px;">{{ data.checkout }}</td>
+        <td style="font-weight:700; font-size:15px; color:var(--accent);">{{ data.nights or '—' }} Nights</td>
+        <td>{{ data.rooms }} Room(s)</td>
+        <td>{{ data.room_type or 'Deluxe' }}</td>
+        <td><span style="background:rgba(232,160,32,0.1); color:var(--accent); padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700;">{{ data.meal or 'BB' }}</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Important Notice -->
+  <div style="background:rgba(10,37,64,0.04); border-left:4px solid var(--accent); border-radius:0 8px 8px 0; padding:16px 20px; margin-bottom:24px;">
+    <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:6px;">
+      <i class="fas fa-info-circle me-2" style="color:var(--accent);"></i>Important Information
+    </div>
+    <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+      · This voucher must be presented upon check-in.<br/>
+      · Check-in time: 14:00 | Check-out time: 12:00<br/>
+      · Any additional services are at the guest's expense.<br/>
+      · Valid ID/Passport required at check-in.
+    </div>
+  </div>
+
+  <!-- Signatures -->
+  <div class="doc-signature">
+    <div>
+      <div class="sig-line"></div>
+      <div class="sig-label">Authorized by — Alsondos Travel & Tourism</div>
+    </div>
+    <div>
+      <div class="sig-line"></div>
+      <div class="sig-label">Hotel Stamp & Signature</div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:20px; font-size:11px; color:var(--text-muted);">
+    Alsondos Travel & Tourism · Amman, Jordan · info@alsondos.com
+  </div>
+</div>
+{% endblock %}
