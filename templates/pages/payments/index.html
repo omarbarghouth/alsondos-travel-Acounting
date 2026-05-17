@@ -1,0 +1,94 @@
+{% extends "layouts/base.html" %}
+{% block title %}Payments — Alsondos ERP{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('dashboard.index') }}">Dashboard</a><span class="sep">›</span>
+  <span class="current">Payments</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-eyebrow">Finance</div>
+    <h1 class="page-title">Payments</h1>
+    <p class="page-subtitle">All received payments and collection records</p>
+  </div>
+  <div class="page-actions no-print">
+    <a href="{{ url_for('payments.new') }}" class="btn btn-danger"><i class="fas fa-plus"></i> Record Payment</a>
+  </div>
+</div>
+
+{% if payments %}
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:22px;">
+  <div class="kpi-card gold" style="margin-bottom:0">
+    <div class="kpi-icon"><i class="fas fa-wallet"></i></div>
+    <div class="kpi-value">{{ total_received | jod }}</div>
+    <div class="kpi-label">Total Received</div>
+  </div>
+  <div class="kpi-card navy" style="margin-bottom:0">
+    <div class="kpi-icon"><i class="fas fa-list"></i></div>
+    <div class="kpi-value">{{ payments|length }}</div>
+    <div class="kpi-label">Payment Records</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <form method="GET" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search ref, payer…" class="filter-input"/>
+    <select name="method" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Methods</option>
+      {% for m in payment_methods %}<option value="{{ m }}" {% if method==m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+    </select>
+    <input type="date" name="date_from" value="{{ date_f }}" class="filter-select" title="From" onchange="this.form.submit()"/>
+    <input type="date" name="date_to"   value="{{ date_t }}" class="filter-select" title="To"   onchange="this.form.submit()"/>
+    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+    {% if q or method or date_f or date_t %}
+      <a href="{{ url_for('payments.index') }}" class="btn btn-ghost btn-sm"><i class="fas fa-times"></i></a>
+    {% endif %}
+  </form>
+
+  {% if payments %}
+  <div class="table-wrap">
+    <table class="erp-table">
+      <thead><tr>
+        <th>Ref #</th><th>Payer</th><th>Transaction</th><th>Date</th>
+        <th>Method</th><th>Reference</th><th>Amount</th><th style="text-align:center">Actions</th>
+      </tr></thead>
+      <tbody>
+      {% for p in payments %}
+      <tr>
+        <td class="td-mono">{{ p.ref_number }}</td>
+        <td class="td-primary">{{ p.payer_name or '—' }}</td>
+        <td style="font-size:13px">{{ p.transaction_id[:8]+'…' if p.transaction_id else '—' }}</td>
+        <td style="font-size:13px">{{ p.payment_date | dateformat if p.payment_date else '—' }}</td>
+        <td><span class="badge badge-confirmed">{{ p.method or '—' }}</span></td>
+        <td style="font-size:13px">{{ p.reference or '—' }}</td>
+        <td class="td-amount">{{ p.amount | jod }}</td>
+        <td>
+          <div style="display:flex;gap:4px;justify-content:center">
+            <a href="{{ url_for('payments.edit', id=p.id) }}" class="action-btn action-edit"><i class="fas fa-pencil-alt"></i></a>
+            <button class="action-btn action-del"
+                    data-delete-url="{{ url_for('payments.delete_payment', id=p.id) }}"
+                    data-delete-name="{{ p.ref_number }}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination-bar">
+    <div class="pagination-info">{{ payments|length }} record{{ 's' if payments|length!=1 }}</div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="fas fa-money-bill-wave"></i></div>
+    <h3>No payments recorded yet</h3>
+    <p>Record payments received against transactions.</p>
+    <a href="{{ url_for('payments.new') }}" class="btn btn-danger"><i class="fas fa-plus"></i> Record Payment</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

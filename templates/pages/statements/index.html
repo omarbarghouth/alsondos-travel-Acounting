@@ -1,0 +1,98 @@
+{% extends "layouts/base.html" %}
+{% block title %}Statements — Alsondos ERP{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('dashboard.index') }}">Dashboard</a><span class="sep">›</span><span class="current">Statements</span>{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-eyebrow">Finance</div>
+    <h1 class="page-title">Account Statements</h1>
+    <p class="page-subtitle">Generate printable statements for companies, customers and suppliers</p>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+
+  <!-- Company Statements -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-building"></i> Company Statements</div></div>
+    {% if companies %}
+    <div class="table-wrap">
+      <table class="erp-table">
+        <thead><tr><th>Company</th><th>City</th><th></th></tr></thead>
+        <tbody>
+        {% for c in companies %}
+        <tr>
+          <td class="td-primary">{{ c.name }}</td>
+          <td style="font-size:13px">{{ c.city or '—' }}</td>
+          <td><a href="{{ url_for('statements.company_statement', id=c.id) }}" class="action-btn action-view"><i class="fas fa-eye"></i></a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:28px">
+      <div class="empty-state-icon"><i class="fas fa-building"></i></div>
+      <h3>No companies yet</h3>
+      <p><a href="{{ url_for('companies.new') }}" style="color:var(--red-mid)">Add a company</a></p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Customer Statements -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-users"></i> Customer Statements</div></div>
+    {% if customers %}
+    <div class="table-wrap">
+      <table class="erp-table">
+        <thead><tr><th>Customer</th><th>Phone</th><th></th></tr></thead>
+        <tbody>
+        {% for c in customers %}
+        <tr>
+          <td class="td-primary">{{ c.name }}</td>
+          <td style="font-size:13px">{{ c.phone or '—' }}</td>
+          <td><a href="{{ url_for('statements.customer_statement', id=c.id) }}" class="action-btn action-view"><i class="fas fa-eye"></i></a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:28px">
+      <div class="empty-state-icon"><i class="fas fa-users"></i></div>
+      <h3>No customers yet</h3>
+      <p><a href="{{ url_for('customers.new') }}" style="color:var(--red-mid)">Add a customer</a></p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Supplier Statements -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-truck"></i> Supplier Statements</div></div>
+    {% if suppliers %}
+    <div class="table-wrap">
+      <table class="erp-table">
+        <thead><tr><th>Supplier</th><th>Type</th><th></th></tr></thead>
+        <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td class="td-primary">{{ s.name }}</td>
+          <td style="font-size:13px">{{ s.type or '—' }}</td>
+          <td><a href="{{ url_for('statements.supplier_statement', id=s.id) }}" class="action-btn action-view"><i class="fas fa-eye"></i></a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:28px">
+      <div class="empty-state-icon"><i class="fas fa-truck"></i></div>
+      <h3>No suppliers yet</h3>
+      <p><a href="{{ url_for('suppliers.new') }}" style="color:var(--red-mid)">Add a supplier</a></p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

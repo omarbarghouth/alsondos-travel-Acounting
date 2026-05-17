@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>{% block title %}Alsondos Travel ERP{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alsondos Travel" class="sb-logo"/>
+    <div class="sb-tagline">Operations &amp; Accounting ERP</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <a href="{{ url_for('dashboard.index') }}"
+       class="sb-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+      <i class="fas fa-chart-pie"></i> Dashboard
+    </a>
+
+    <div class="sb-section">Operations</div>
+    <a href="{{ url_for('transactions.index') }}"
+       class="sb-link {% if 'transactions' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-exchange-alt"></i> Transactions
+    </a>
+    <a href="{{ url_for('payments.index') }}"
+       class="sb-link {% if 'payments' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-money-bill-wave"></i> Payments
+    </a>
+
+    <div class="sb-section">Documents</div>
+    <a href="{{ url_for('statements.index') }}"
+       class="sb-link {% if 'statements' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-file-invoice-dollar"></i> Statements
+    </a>
+    <a href="{{ url_for('vouchers.index') }}"
+       class="sb-link {% if 'vouchers' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-hotel"></i> Hotel Vouchers
+    </a>
+    <a href="{{ url_for('invoices.index') }}"
+       class="sb-link {% if 'invoices' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-file-invoice"></i> Invoices
+    </a>
+
+    <div class="sb-section">Management</div>
+    <a href="{{ url_for('suppliers.index') }}"
+       class="sb-link {% if 'suppliers' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-truck"></i> Suppliers
+    </a>
+    <a href="{{ url_for('companies.index') }}"
+       class="sb-link {% if 'companies' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-building"></i> Companies
+    </a>
+    <a href="{{ url_for('customers.index') }}"
+       class="sb-link {% if 'customers' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-users"></i> Customers
+    </a>
+    <a href="{{ url_for('hotels.index') }}"
+       class="sb-link {% if 'hotels' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-concierge-bell"></i> Hotels
+    </a>
+    <a href="{{ url_for('tours.index') }}"
+       class="sb-link {% if 'tours' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-map-marked-alt"></i> Tours
+    </a>
+    <a href="{{ url_for('transfers.index') }}"
+       class="sb-link {% if 'transfers' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-car"></i> Transfers
+    </a>
+
+    <div class="sb-section">System</div>
+    <a href="{{ url_for('settings.index') }}"
+       class="sb-link {% if 'settings' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-cog"></i> Settings
+    </a>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="sb-footer-txt">
+      <strong>Alsondos Travel &amp; Tourism</strong><br/>
+      ERP System v2.0
+    </div>
+  </div>
+</aside>
+<div class="sb-overlay" id="sb-overlay"></div>
+
+<!-- ═══ MAIN ════════════════════════════════════════════════ -->
+<div class="main" id="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="topbar-toggle" id="sidebar-toggle" style="display:none">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="topbar-breadcrumb">
+      {% block breadcrumb %}<span class="current">Dashboard</span>{% endblock %}
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date">
+        <i class="fas fa-calendar-alt"></i>
+        <span id="topbar-date"></span>
+      </div>
+      <div class="topbar-agency">
+        <div class="topbar-agency-icon"><i class="fas fa-plane"></i></div>
+        <div>
+          <div class="topbar-agency-name">Alsondos Travel</div>
+          <div class="topbar-agency-sub">ERP SYSTEM</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container" style="padding:14px 30px 0">
+        {% for cat, msg in messages %}
+          <div class="flash-msg flash-{{ cat }}">
+            <i class="fas fa-{{ 'check-circle' if cat=='success' else 'exclamation-circle' if cat=='danger' else 'info-circle' }}"></i>
+            {{ msg }}
+            <button class="flash-close" type="button">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page content -->
+  <div class="page-body">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<!-- ═══ DELETE MODAL ════════════════════════════════════════ -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-box">
+    <div class="modal-icon"><i class="fas fa-trash"></i></div>
+    <div class="modal-title">Confirm Deletion</div>
+    <div class="modal-body">
+      You are about to delete <strong id="delete-name"></strong>.<br/>
+      This action cannot be undone.
+    </div>
+    <form method="POST" id="delete-form">
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="delete-cancel">Cancel</button>
+        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

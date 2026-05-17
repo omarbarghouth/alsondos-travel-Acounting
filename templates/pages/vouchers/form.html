@@ -1,0 +1,231 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ 'Edit' if is_edit else 'New' }} Voucher — Alsondos ERP{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('vouchers.index') }}">Hotel Vouchers</a><span class="sep">›</span>
+  <span class="current">{{ 'Edit Voucher' if is_edit else 'New Voucher' }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-eyebrow">{{ 'Edit' if is_edit else 'Create' }}</div>
+    <h1 class="page-title">{{ voucher.voucher_number if is_edit else 'New Hotel Voucher' }}</h1>
+    <p class="page-subtitle">{{ 'Update voucher details' if is_edit else 'Fill in hotel and guest details' }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('vouchers.index') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+  </div>
+</div>
+
+<form method="POST">
+
+<!-- 1. Guest & Transaction -->
+<div class="form-section">
+  <div class="form-section-hdr"><i class="fas fa-user"></i><span class="form-section-title">Guest & Booking Reference</span></div>
+  <div class="form-section-body">
+    <div class="form-row cols-3">
+      <div class="form-group">
+        <label class="form-label">Link to Transaction</label>
+        <select name="transaction_id" class="form-control">
+          <option value="">— No transaction —</option>
+          {% for t in txns %}
+          <option value="{{ t.id }}" {% if voucher.get('transaction_id')==t.id %}selected{% endif %}>
+            {{ t.ref_number }} — {{ t.customer_name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Guest Name<span class="req">*</span></label>
+        <input type="text" name="guest_name" class="form-control"
+               value="{{ voucher.get('guest_name','') }}" placeholder="Full guest name" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Number of Guests</label>
+        <input type="number" name="num_guests" class="form-control"
+               value="{{ voucher.get('num_guests','') }}" placeholder="1" min="1"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Hotel -->
+<div class="form-section">
+  <div class="form-section-hdr"><i class="fas fa-hotel"></i><span class="form-section-title">Hotel Details</span></div>
+  <div class="form-section-body">
+    <div class="form-row cols-3">
+      <div class="form-group">
+        <label class="form-label">Hotel (from list)</label>
+        <select name="hotel_id" class="form-control">
+          <option value="">— Type manually —</option>
+          {% for h in hotels %}
+          <option value="{{ h.id }}">{{ h.name }}{% if h.city %} — {{ h.city }}{% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hotel Name<span class="req">*</span></label>
+        <input type="text" name="hotel_name" class="form-control"
+               value="{{ voucher.get('hotel_name','') }}" placeholder="Hotel name" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hotel Phone</label>
+        <input type="text" name="hotel_phone" class="form-control"
+               value="{{ voucher.get('hotel_phone','') }}" placeholder="+962 x xxx xxxx"/>
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="form-group">
+        <label class="form-label">Hotel Address</label>
+        <input type="text" name="hotel_address" class="form-control"
+               value="{{ voucher.get('hotel_address','') }}" placeholder="Full address"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hotel Contact Person</label>
+        <input type="text" name="hotel_contact" class="form-control"
+               value="{{ voucher.get('hotel_contact','') }}" placeholder="Front desk / reservation name"/>
+      </div>
+    </div>
+    <div class="form-row cols-4">
+      <div class="form-group">
+        <label class="form-label">Room Type<span class="req">*</span></label>
+        <select name="room_type" class="form-control" required>
+          <option value="">Select…</option>
+          {% for rt in room_types %}<option value="{{ rt }}" {% if voucher.get('room_type')==rt %}selected{% endif %}>{{ rt }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meal Plan</label>
+        <select name="meal_plan" class="form-control">
+          <option value="">Select…</option>
+          {% for mp in meal_plans %}<option value="{{ mp }}" {% if voucher.get('meal_plan')==mp %}selected{% endif %}>{{ mp }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Check-In<span class="req">*</span></label>
+        <input type="date" name="checkin" id="hotel_checkin" class="form-control"
+               value="{{ voucher.get('checkin','') }}" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Check-Out<span class="req">*</span></label>
+        <input type="date" name="checkout" id="hotel_checkout" class="form-control"
+               value="{{ voucher.get('checkout','') }}" required/>
+      </div>
+    </div>
+    <div class="form-row cols-4">
+      <div class="form-group">
+        <label class="form-label">Nights</label>
+        <input type="number" name="nights" id="hotel_nights" class="form-control"
+               value="{{ voucher.get('nights','') }}" placeholder="Auto" min="1"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Inclusions -->
+<div class="form-section">
+  <div class="form-section-hdr"><i class="fas fa-check-circle"></i><span class="form-section-title">Package Inclusions</span></div>
+  <div class="form-section-body">
+    <div class="form-row cols-3">
+      <div class="form-group">
+        <label class="form-label">Airport Transfer</label>
+        <select name="include_transfer" class="form-control">
+          <option value="">Not included</option>
+          <option value="Arrival"         {% if voucher.get('include_transfer')=='Arrival'         %}selected{% endif %}>Arrival only</option>
+          <option value="Departure"       {% if voucher.get('include_transfer')=='Departure'       %}selected{% endif %}>Departure only</option>
+          <option value="Both"            {% if voucher.get('include_transfer')=='Both'            %}selected{% endif %}>Arrival &amp; Departure</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tours</label>
+        <select name="include_tours" class="form-control">
+          <option value="">Not included</option>
+          <option value="Included" {% if voucher.get('include_tours')=='Included' %}selected{% endif %}>Included</option>
+          <option value="Optional" {% if voucher.get('include_tours')=='Optional' %}selected{% endif %}>Optional</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Insurance</label>
+        <select name="include_insurance" class="form-control">
+          <option value="">Not included</option>
+          <option value="Included" {% if voucher.get('include_insurance')=='Included' %}selected{% endif %}>Included</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Transfer Details -->
+<div class="form-section">
+  <div class="form-section-hdr"><i class="fas fa-car"></i><span class="form-section-title">Transfer / Pickup Details</span></div>
+  <div class="form-section-body">
+    <div class="form-row cols-3">
+      <div class="form-group">
+        <label class="form-label">Arrival Flight</label>
+        <input type="text" name="arrival_flight" class="form-control"
+               value="{{ voucher.get('arrival_flight','') }}" placeholder="e.g. RJ110"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pickup Time</label>
+        <input type="time" name="pickup_time" class="form-control"
+               value="{{ voucher.get('pickup_time','') }}"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vehicle Type</label>
+        <select name="vehicle_type" class="form-control">
+          <option value="">Select…</option>
+          {% for v in ['Sedan','SUV','Van','Minibus','Bus','Limousine'] %}
+          <option value="{{ v }}" {% if voucher.get('vehicle_type')==v %}selected{% endif %}>{{ v }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="form-group">
+        <label class="form-label">Pickup Sign Name</label>
+        <input type="text" name="pickup_sign" class="form-control"
+               value="{{ voucher.get('pickup_sign','') }}" placeholder="Name on airport sign"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Driver Contact</label>
+        <input type="text" name="driver_contact" class="form-control"
+               value="{{ voucher.get('driver_contact','') }}" placeholder="Driver phone number"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Emergency & Policy -->
+<div class="form-section">
+  <div class="form-section-hdr"><i class="fas fa-phone-alt"></i><span class="form-section-title">Emergency Contact &amp; Policy</span></div>
+  <div class="form-section-body">
+    <div class="form-row cols-2">
+      <div class="form-group">
+        <label class="form-label">Emergency Contact</label>
+        <input type="text" name="emergency_contact" class="form-control"
+               value="{{ voucher.get('emergency_contact','') }}" placeholder="24/7 contact number"/>
+      </div>
+    </div>
+    <div class="form-row cols-1">
+      <div class="form-group">
+        <label class="form-label">Cancellation Policy</label>
+        <textarea name="cancellation_policy" class="form-control" rows="2"
+                  placeholder="e.g. Free cancellation up to 48 hours before check-in…">{{ voucher.get('cancellation_policy','') }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Remarks / Special Requests</label>
+        <textarea name="remarks" class="form-control" rows="2"
+                  placeholder="Special requests, dietary needs, accessibility…">{{ voucher.get('remarks','') }}</textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;" class="no-print">
+  <a href="{{ url_for('vouchers.index') }}" class="btn btn-outline">Cancel</a>
+  <button type="submit" class="btn btn-danger btn-lg">
+    <i class="fas fa-save"></i> {{ 'Update Voucher' if is_edit else 'Create Voucher' }}
+  </button>
+</div>
+</form>
+{% endblock %}

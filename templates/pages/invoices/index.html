@@ -1,0 +1,71 @@
+{% extends "layouts/base.html" %}
+{% block title %}Invoices — Alsondos ERP{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('dashboard.index') }}">Dashboard</a><span class="sep">›</span>
+  <span class="current">Invoices</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-eyebrow">Documents</div>
+    <h1 class="page-title">Invoices</h1>
+    <p class="page-subtitle">Professional invoices for clients and companies</p>
+  </div>
+  <div class="page-actions no-print">
+    <a href="{{ url_for('invoices.new') }}" class="btn btn-danger"><i class="fas fa-plus"></i> New Invoice</a>
+  </div>
+</div>
+
+<div class="card">
+  {% if invoices %}
+  <div class="table-wrap">
+    <table class="erp-table">
+      <thead><tr>
+        <th>Invoice #</th><th>Billed To</th><th>Service</th><th>Date</th>
+        <th>Due Date</th><th>Total</th><th>Status</th>
+        <th style="text-align:center">Actions</th>
+      </tr></thead>
+      <tbody>
+      {% for inv in invoices %}
+      <tr>
+        <td class="td-mono">{{ inv.invoice_number }}</td>
+        <td class="td-primary">{{ inv.bill_to_name or '—' }}</td>
+        <td style="font-size:13px">{{ inv.service_type or '—' }}</td>
+        <td style="font-size:13px">{{ inv.invoice_date | dateformat if inv.invoice_date else '—' }}</td>
+        <td style="font-size:13px">{{ inv.due_date | dateformat if inv.due_date else '—' }}</td>
+        <td class="td-amount">{{ inv.total | jod }}</td>
+        <td>
+          <span class="badge badge-{{ (inv.payment_status or 'unpaid')|lower }}">
+            {{ inv.payment_status or 'Unpaid' }}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:4px;justify-content:center">
+            <a href="{{ url_for('invoices.print_invoice', id=inv.id) }}" class="action-btn action-print" title="Print" target="_blank"><i class="fas fa-print"></i></a>
+            <a href="{{ url_for('invoices.edit', id=inv.id) }}"          class="action-btn action-edit"  title="Edit"><i class="fas fa-pencil-alt"></i></a>
+            <button class="action-btn action-del" title="Delete"
+                    data-delete-url="{{ url_for('invoices.delete_invoice', id=inv.id) }}"
+                    data-delete-name="{{ inv.invoice_number }}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination-bar">
+    <div class="pagination-info">{{ invoices|length }} invoice{{ 's' if invoices|length!=1 }}</div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="fas fa-file-invoice"></i></div>
+    <h3>No invoices yet</h3>
+    <p>Create professional invoices to send to clients and companies.</p>
+    <a href="{{ url_for('invoices.new') }}" class="btn btn-danger"><i class="fas fa-plus"></i> New Invoice</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

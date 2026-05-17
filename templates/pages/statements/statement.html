@@ -1,0 +1,115 @@
+{% extends "layouts/base.html" %}
+{% block title %}Statement — {{ entity.name }}{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('statements.index') }}">Statements</a><span class="sep">›</span>
+  <span class="current">{{ entity.name }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header no-print">
+  <div>
+    <div class="page-eyebrow">{{ entity_type|capitalize }} Statement</div>
+    <h1 class="page-title">{{ entity.name }}</h1>
+    <p class="page-subtitle">Account statement — showing sell prices and payments only</p>
+  </div>
+  <div class="page-actions">
+    <button class="btn btn-primary" data-print><i class="fas fa-print"></i> Print</button>
+    <a href="{{ url_for('statements.index') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+  </div>
+</div>
+
+<!-- Date filter -->
+<div class="card no-print" style="margin-bottom:18px">
+  <div class="card-body" style="padding:14px 20px">
+    <form method="GET" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:13px;font-weight:600;color:var(--gray-600)">Filter by date:</span>
+      <input type="date" name="from" value="{{ date_from }}" class="filter-select"/>
+      <span style="color:var(--gray-400)">to</span>
+      <input type="date" name="to"   value="{{ date_to   }}" class="filter-select"/>
+      <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+      {% if date_from or date_to %}
+        <a href="{{ url_for('statements.'+entity_type+'_statement', id=entity.id) }}" class="btn btn-ghost btn-sm">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="doc-paper">
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="doc-logo-area">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alsondos Travel"/>
+      <div class="doc-agency-info">Alsondos Travel &amp; Tourism<br/>Amman, Jordan</div>
+    </div>
+    <div>
+      <div class="doc-type-name">STATEMENT</div>
+      <div style="text-align:right"><span class="doc-type-accent">{{ entity_type|upper }}</span></div>
+      <div class="doc-number" style="text-align:right">
+        {% if date_from or date_to %}{{ date_from or '—' }} to {{ date_to or '—' }}{% else %}All Dates{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Client info -->
+  <div class="doc-parties">
+    <div>
+      <div class="doc-party-label">Account</div>
+      <div class="doc-party-name">{{ entity.name }}</div>
+      <div class="doc-party-detail">
+        {% if entity.get('city') %}{{ entity.city }}{% if entity.get('country') %}, {{ entity.country }}{% endif %}<br/>{% endif %}
+        {% if entity.get('phone') %}Tel: {{ entity.phone }}<br/>{% endif %}
+        {% if entity.get('email') %}{{ entity.email }}{% endif %}
+      </div>
+    </div>
+    <div>
+      <div class="doc-party-label">Summary</div>
+      <div class="doc-party-detail">
+        <strong>Total Invoiced:</strong> {{ total_invoiced | jod }}<br/>
+        <strong>Total Paid:</strong>     {{ total_paid     | jod }}<br/>
+        <strong>Outstanding:</strong>    {{ outstanding    | jod }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Ledger -->
+  {% if ledger %}
+  <table class="doc-table">
+    <thead><tr><th>Date</th><th>Ref</th><th>Description</th><th style="text-align:right">Debit (JOD)</th><th style="text-align:right">Credit (JOD)</th><th style="text-align:right">Balance (JOD)</th></tr></thead>
+    <tbody>
+    {% for row in ledger %}
+    <tr>
+      <td style="white-space:nowrap">{{ row.date | dateformat if row.date else '—' }}</td>
+      <td style="font-family:monospace;font-size:12px">{{ row.ref }}</td>
+      <td>{{ row.description }}</td>
+      <td class="stmt-dr" style="text-align:right">{% if row.debit %}{{ row.debit | jod }}{% else %}&mdash;{% endif %}</td>
+      <td class="stmt-cr" style="text-align:right">{% if row.credit %}{{ row.credit | jod }}{% else %}&mdash;{% endif %}</td>
+      <td class="stmt-bal" style="text-align:right;color:{{ 'var(--success)' if row.balance<=0 else 'var(--red-mid)' }}">{{ row.balance | jod }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="doc-totals">
+    <div class="doc-totals-box">
+      <div class="doc-total-row"><span>Total Invoiced</span><span>{{ total_invoiced | jod }}</span></div>
+      <div class="doc-total-row"><span>Total Paid</span><span style="color:var(--success)">{{ total_paid | jod }}</span></div>
+      <div class="doc-total-row grand">
+        <span>Outstanding Balance</span>
+        <span class="v">{{ outstanding | jod }}</span>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:40px;color:var(--gray-400)">
+    <i class="fas fa-file-invoice-dollar" style="font-size:36px;display:block;margin-bottom:10px"></i>
+    No transactions found for this account in the selected period.
+  </div>
+  {% endif %}
+
+  <div class="doc-footer-note">
+    Statement generated by Alsondos Travel &amp; Tourism · Amman, Jordan<br/>
+    This statement shows invoiced amounts and payments only.
+    For queries, contact us directly.
+  </div>
+</div>
+{% endblock %}
