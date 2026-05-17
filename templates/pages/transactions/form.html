@@ -145,10 +145,38 @@
         <input type="text" name="buy_from" class="form-control" value="{{ txn.buy_from or '' }}" placeholder="GDS, direct, consolidator…"/>
       </div>
     </div>
-    <div class="form-row cols-2">
-      <div class="form-group">
-        <label class="form-label">Return Supplier (if different)</label>
-        <input type="text" name="return_supplier" class="form-control" value="{{ txn.return_supplier or '' }}"/>
+    {# ── Round-trip supplier separation ── #}
+    <div style="background:var(--gold-pale);border:1.5px solid rgba(201,168,76,.25);border-radius:var(--radius-sm);padding:15px 18px;margin-top:4px">
+      <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">
+        <i class="fas fa-exchange-alt" style="margin-right:6px"></i>Round-Trip Supplier Split (for flights with different outbound/return suppliers)
+      </div>
+      <div class="form-row cols-2" style="margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Return Supplier Name</label>
+          <input type="text" name="return_supplier_name" class="form-control"
+                 value="{{ txn.return_supplier_name or '' }}" placeholder="Return leg supplier (if different)"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Return Supplier (from list)</label>
+          <select name="return_supplier_id" class="form-control">
+            <option value="">— Select —</option>
+            {% for s in suppliers %}<option value="{{ s.id }}" {% if txn.return_supplier_id==s.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label class="form-label">Outbound Cost (JOD)</label>
+          <input type="number" name="outbound_cost" class="form-control"
+                 value="{{ txn.outbound_cost or '' }}" step="0.001" min="0" placeholder="0.000"/>
+          <span class="form-hint">Cost for outbound leg only</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Return Cost (JOD)</label>
+          <input type="number" name="return_cost" class="form-control"
+                 value="{{ txn.return_cost or '' }}" step="0.001" min="0" placeholder="0.000"/>
+          <span class="form-hint">Cost for return leg only</span>
+        </div>
       </div>
     </div>
   </div>

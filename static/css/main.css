@@ -401,3 +401,116 @@ textarea.form-control{resize:vertical;min-height:88px}
   a{text-decoration:none!important;color:inherit!important}
   .btn{display:none!important}
 }
+
+/* ════════════════════════════════════════════════════════════
+   LOGO IMPROVEMENTS
+   ════════════════════════════════════════════════════════════ */
+.sb-logo-link { display:block; padding:0; text-decoration:none; }
+.sb-logo {
+  width:170px; height:auto; display:block;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,.28));
+  transition:filter var(--dur) var(--ease);
+}
+.sb-logo:hover { filter:drop-shadow(0 2px 12px rgba(201,168,76,.40)); }
+.sb-brand {
+  padding:20px 18px 16px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
+}
+.topbar-logo-img {
+  height:30px; width:auto;
+  filter:brightness(10);       /* white on navy topbar */
+  opacity:.85;
+}
+.topbar-agency {
+  display:flex; align-items:center; gap:10px;
+  padding:6px 14px;
+  background:var(--navy); border-radius:var(--radius-sm); color:var(--white);
+}
+
+/* ════════════════════════════════════════════════════════════
+   STATEMENTS — UNIFIED PAGE
+   ════════════════════════════════════════════════════════════ */
+.stmt-filter-card .card-body { padding:20px 22px; }
+
+/* Entity header */
+.stmt-entity-header {
+  background:var(--white);
+  border:1px solid var(--gray-200);
+  border-radius:var(--radius);
+  padding:18px 22px;
+  box-shadow:var(--shadow-sm);
+}
+.stmt-entity-avatar {
+  width:52px; height:52px; border-radius:14px;
+  background:linear-gradient(135deg,var(--navy),var(--navy-light));
+  color:var(--gold-light); font-size:20px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+
+/* KPI mini */
+.stmt-kpi { text-align:right; min-width:130px; }
+.stmt-kpi-val { font-family:var(--font-hd); font-size:18px; font-weight:700; color:var(--navy); line-height:1; }
+.stmt-kpi-lbl { font-size:10.5px; color:var(--gray-400); font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+
+/* Ledger table */
+.stmt-table { font-size:13.5px; }
+.stmt-table thead th { background:var(--navy); }
+.stmt-row-invoice td { background:rgba(11,25,41,.018); }
+.stmt-row-payment td { background:rgba(16,185,129,.04); }
+.stmt-row-purchase td { background:rgba(59,130,246,.04); }
+.stmt-ref {
+  font-family:'Courier New',monospace; font-size:12px;
+  color:var(--red-mid); font-weight:700;
+  background:var(--red-glow); padding:2px 7px; border-radius:4px;
+}
+.stmt-dr { color:var(--red-mid) !important; font-weight:700; }
+.stmt-cr { color:var(--success) !important; font-weight:700; }
+.stmt-bal-pill {
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  font-weight:700; font-size:12.5px; white-space:nowrap;
+}
+.stmt-bal-pill.positive { background:var(--success-bg); color:#059669; }
+.stmt-bal-pill.negative { background:var(--danger-bg);  color:var(--red-mid); }
+.stmt-totals-row td {
+  background:var(--navy) !important; border-bottom:none !important;
+  padding:14px 16px !important;
+}
+
+/* Quick links at bottom of empty state */
+.stmt-quick-link { display:inline-flex; align-items:center; gap:5px; }
+
+/* ════════════════════════════════════════════════════════════
+   PRINT — STATEMENT SPECIFIC
+   ════════════════════════════════════════════════════════════ */
+.print-only { display:none; }
+@media print {
+  .print-only { display:block !important; }
+  .no-print, .sidebar, .topbar, .flash-container,
+  .page-actions, .filter-bar, .pagination-bar,
+  .stmt-filter-card, .stmt-entity-header { display:none !important; }
+  .main { margin-left:0 !important; }
+  .page-body { padding:0 !important; }
+  body { background:#fff !important; font-size:12px; }
+  .card { box-shadow:none !important; border:none !important; break-inside:avoid; }
+  .erp-table thead th { background:#1a2940 !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .stmt-totals-row td { background:#1a2940 !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .stmt-bal-pill.negative { background:#fee2e2 !important; color:#b91c1c !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .stmt-bal-pill.positive { background:#d1fae5 !important; color:#065f46 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .page-header { margin-bottom:0 !important; }
+  .doc-paper { box-shadow:none !important; border:none !important; padding:0 !important; max-width:100% !important; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   TRANSACTION VIEW — payment status bar
+   ════════════════════════════════════════════════════════════ */
+.payment-progress-bar {
+  height:8px; border-radius:4px; background:var(--gray-200);
+  overflow:hidden; margin-top:6px;
+}
+.payment-progress-fill {
+  height:100%; border-radius:4px;
+  background:linear-gradient(90deg,var(--success),#34d399);
+  transition:width .6s var(--ease);
+}

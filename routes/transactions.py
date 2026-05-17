@@ -136,9 +136,12 @@ def _collect() -> dict:
         'nationality':       _f('nationality'),
         'customer_id':       _f('customer_id'),
         # Supplier
-        'supplier_name':     _f('supplier_name'),
         'buy_from':          _f('buy_from'),
         'return_supplier':   _f('return_supplier'),
+        'return_supplier_name': _f('return_supplier_name'),
+        'return_supplier_id':   _f('return_supplier_id'),
+        'outbound_cost':     _flt('outbound_cost'),
+        'return_cost':       _flt('return_cost'),
         'supplier_id':       _f('supplier_id'),
         # Sales
         'sell_to':           _f('sell_to'),

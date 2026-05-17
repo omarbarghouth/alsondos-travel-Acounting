@@ -12,11 +12,13 @@
 </head>
 <body>
 
-<!-- ═══ SIDEBAR ════════════════════════════════════════════ -->
+<!-- ═══ SIDEBAR ════════════════════════════════════════════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-brand">
-    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alsondos Travel" class="sb-logo"/>
-    <div class="sb-tagline">Operations &amp; Accounting ERP</div>
+    <a href="{{ url_for('dashboard.index') }}" class="sb-logo-link">
+      <img src="{{ url_for('static', filename='images/logo_white.png') }}"
+           alt="Alsondos Travel & Tourism" class="sb-logo"/>
+    </a>
   </div>
 
   <nav class="sb-nav">
@@ -92,7 +94,7 @@
 </aside>
 <div class="sb-overlay" id="sb-overlay"></div>
 
-<!-- ═══ MAIN ════════════════════════════════════════════════ -->
+<!-- ═══ MAIN ═══════════════════════════════════════════════════ -->
 <div class="main" id="main">
 
   <!-- Topbar -->
@@ -109,7 +111,8 @@
         <span id="topbar-date"></span>
       </div>
       <div class="topbar-agency">
-        <div class="topbar-agency-icon"><i class="fas fa-plane"></i></div>
+        <img src="{{ url_for('static', filename='images/logo_white.png') }}"
+             alt="Alsondos" class="topbar-logo-img"/>
         <div>
           <div class="topbar-agency-name">Alsondos Travel</div>
           <div class="topbar-agency-sub">ERP SYSTEM</div>
@@ -139,7 +142,7 @@
   </div>
 </div>
 
-<!-- ═══ DELETE MODAL ════════════════════════════════════════ -->
+<!-- ═══ DELETE MODAL ═══════════════════════════════════════════ -->
 <div class="modal-overlay" id="delete-modal">
   <div class="modal-box">
     <div class="modal-icon"><i class="fas fa-trash"></i></div>

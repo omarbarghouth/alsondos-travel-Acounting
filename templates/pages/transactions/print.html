@@ -37,7 +37,8 @@
       <div class="doc-party-detail">
         <strong>Date:</strong> {{ txn.booking_date | dateformat if txn.booking_date else '—' }}<br/>
         <strong>Status:</strong> {{ txn.status or '—' }}<br/>
-        {% if txn.supplier_name %}<strong>Supplier:</strong> {{ txn.supplier_name }}<br/>{% endif %}
+        {% if txn.supplier_name %}<strong>Outbound Supplier:</strong> {{ txn.supplier_name }}<br/>{% endif %}
+        {% if txn.return_supplier_name %}<strong>Return Supplier:</strong> {{ txn.return_supplier_name }}<br/>{% endif %}
         {% if txn.sell_to %}<strong>Billed To:</strong> {{ txn.sell_to }}{% endif %}
       </div>
     </div>
