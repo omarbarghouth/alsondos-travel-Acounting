@@ -12,7 +12,7 @@ DEFAULTS = {
     'email':                 '',
     'tax_number':            '',
     'website':               '',
-    'currency':              'JOD',
+    'currency': 'JOD',
     'invoice_footer':        'Thank you for choosing Alsondos Travel & Tourism.',
     'voucher_emergency':     '',
     'cancellation_policy':   '',

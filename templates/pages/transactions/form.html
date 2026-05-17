@@ -96,7 +96,7 @@
     <div class="form-row cols-3">
       <div class="form-group">
         <label class="form-label">Customer (from list)</label>
-        <select name="customer_id" class="form-control">
+        <select name="customer_id" class="form-control ss-native" id="sel-customer_id">
           <option value="">— Type directly —</option>
           {% for c in customers %}<option value="{{ c.id }}" {% if txn.customer_id==c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
         </select>
@@ -131,7 +131,7 @@
     <div class="form-row cols-3">
       <div class="form-group">
         <label class="form-label">Supplier (from list)</label>
-        <select name="supplier_id" class="form-control">
+        <select name="supplier_id" class="form-control ss-native" id="sel-supplier_id">
           <option value="">— Type directly —</option>
           {% for s in suppliers %}<option value="{{ s.id }}" {% if txn.supplier_id==s.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
         </select>
@@ -158,7 +158,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Return Supplier (from list)</label>
-          <select name="return_supplier_id" class="form-control">
+          <select name="return_supplier_id" class="form-control ss-native" id="sel-return_supplier_id">
             <option value="">— Select —</option>
             {% for s in suppliers %}<option value="{{ s.id }}" {% if txn.return_supplier_id==s.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
           </select>
@@ -189,7 +189,7 @@
     <div class="form-row cols-3">
       <div class="form-group">
         <label class="form-label">Sell To — Company</label>
-        <select name="company_id" class="form-control">
+        <select name="company_id" class="form-control ss-native" id="sel-company_id">
           <option value="">— Direct client —</option>
           {% for c in companies %}<option value="{{ c.id }}" {% if txn.company_id==c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
         </select>
@@ -409,4 +409,7 @@
   </button>
 </div>
 </form>
+{% endblock %}
+
+{% block extra_js %}
 {% endblock %}

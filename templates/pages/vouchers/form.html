@@ -26,7 +26,7 @@
     <div class="form-row cols-3">
       <div class="form-group">
         <label class="form-label">Link to Transaction</label>
-        <select name="transaction_id" class="form-control">
+        <select name="transaction_id" class="form-control ss-native">
           <option value="">— No transaction —</option>
           {% for t in txns %}
           <option value="{{ t.id }}" {% if voucher.get('transaction_id')==t.id %}selected{% endif %}>

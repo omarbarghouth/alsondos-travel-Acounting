@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
   <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.min.css" rel="stylesheet"/>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -161,6 +162,20 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  // Activate Tom Select on all .ss-native selects
+  document.querySelectorAll('select.ss-native').forEach(function(el){
+    new TomSelect(el, {
+      allowEmptyOption: true,
+      placeholder: el.options[0]?.text || 'Search…',
+      maxOptions: 200,
+      plugins: ['clear_button'],
+    });
+  });
+});
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

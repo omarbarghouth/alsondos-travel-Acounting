@@ -6,163 +6,234 @@
 {% endblock %}
 
 {% block content %}
+
+{# ════════════════════════════════════════════════════════════
+   PAGE HEADER
+   ════════════════════════════════════════════════════════════ #}
 <div class="page-header">
   <div>
-    <div class="page-eyebrow">Finance</div>
+    <div class="page-eyebrow">Finance · Accounting</div>
     <h1 class="page-title">Account Statements</h1>
-    <p class="page-subtitle">Live ledger — transactions and payments auto-connected</p>
+    <p class="page-subtitle">Transaction → Payment → Balance · auto-connected</p>
   </div>
   {% if entity %}
   <div class="page-actions no-print">
-    <button class="btn btn-primary" data-print><i class="fas fa-print"></i> Print Statement</button>
+    <button class="btn btn-primary" onclick="window.print()">
+      <i class="fas fa-print"></i> Print Statement
+    </button>
+    <a href="{{ url_for('statements.index') }}" class="btn btn-outline">
+      <i class="fas fa-times"></i> Clear
+    </a>
   </div>
   {% endif %}
 </div>
 
-{# ── FILTER PANEL ─────────────────────────────────────────── #}
-<div class="card stmt-filter-card no-print" style="margin-bottom:20px">
+{# ════════════════════════════════════════════════════════════
+   FILTER PANEL  (hidden on print)
+   ════════════════════════════════════════════════════════════ #}
+<div class="card no-print" style="margin-bottom:20px">
   <div class="card-header">
     <div class="card-title"><i class="fas fa-filter"></i> Statement Filters</div>
+    {% if has_filter %}
+    <a href="{{ url_for('statements.index') }}" class="btn btn-ghost btn-sm">
+      <i class="fas fa-times"></i> Clear All
+    </a>
+    {% endif %}
   </div>
-  <div class="card-body">
-    <form method="GET" id="stmt-filter-form">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+  <div class="card-body" style="padding:18px 22px">
+    <form method="GET" id="stmt-form">
+      <div class="stmt-filters-grid">
+
+        {# Searchable Company dropdown #}
         <div class="form-group">
-          <label class="form-label">Company</label>
-          <select name="company_id" class="form-control" onchange="clearOthers('company_id')">
-            <option value="">— Select Company —</option>
-            {% for c in companies %}
-            <option value="{{ c.id }}" {% if company_id == c.id %}selected{% endif %}>{{ c.name }}</option>
-            {% endfor %}
-          </select>
+          <label class="form-label"><i class="fas fa-building" style="color:var(--navy);margin-right:4px"></i>Company</label>
+          <div class="searchable-select" data-name="company_id" data-selected="{{ company_id }}">
+            <div class="ss-input-wrap">
+              <input type="text" class="ss-search form-control" placeholder="Search company…" autocomplete="off"/>
+              <i class="fas fa-chevron-down ss-arrow"></i>
+            </div>
+            <input type="hidden" name="company_id" value="{{ company_id }}"/>
+            <div class="ss-dropdown">
+              <div class="ss-option" data-value="">— All Companies —</div>
+              {% for c in companies %}
+              <div class="ss-option {% if c.get('_synthetic') %}ss-option-synthetic{% endif %}"
+                   data-value="{{ c.id }}">
+                {{ c.name }}{% if c.get('_synthetic') %} <span class="ss-tag">from transactions</span>{% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
         </div>
+
+        {# Searchable Customer dropdown #}
         <div class="form-group">
-          <label class="form-label">Customer</label>
-          <select name="customer_id" class="form-control" onchange="clearOthers('customer_id')">
-            <option value="">— Select Customer —</option>
-            {% for c in customers %}
-            <option value="{{ c.id }}" {% if customer_id == c.id %}selected{% endif %}>{{ c.name }}</option>
-            {% endfor %}
-          </select>
+          <label class="form-label"><i class="fas fa-user" style="color:var(--navy);margin-right:4px"></i>Customer</label>
+          <div class="searchable-select" data-name="customer_id" data-selected="{{ customer_id }}">
+            <div class="ss-input-wrap">
+              <input type="text" class="ss-search form-control" placeholder="Search customer…" autocomplete="off"/>
+              <i class="fas fa-chevron-down ss-arrow"></i>
+            </div>
+            <input type="hidden" name="customer_id" value="{{ customer_id }}"/>
+            <div class="ss-dropdown">
+              <div class="ss-option" data-value="">— All Customers —</div>
+              {% for c in customers %}
+              <div class="ss-option {% if c.get('_synthetic') %}ss-option-synthetic{% endif %}"
+                   data-value="{{ c.id }}">
+                {{ c.name }}{% if c.get('_synthetic') %} <span class="ss-tag">from transactions</span>{% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
         </div>
+
+        {# Searchable Supplier dropdown #}
         <div class="form-group">
-          <label class="form-label">Supplier <span style="font-size:10px;color:var(--gray-400)">(Internal)</span></label>
-          <select name="supplier_id" class="form-control" onchange="clearOthers('supplier_id')">
-            <option value="">— Select Supplier —</option>
-            {% for s in suppliers %}
-            <option value="{{ s.id }}" {% if supplier_id == s.id %}selected{% endif %}>{{ s.name }}</option>
-            {% endfor %}
-          </select>
+          <label class="form-label">
+            <i class="fas fa-truck" style="color:var(--navy);margin-right:4px"></i>Supplier
+            <span style="font-size:10px;color:var(--gray-400);font-weight:400">(internal)</span>
+          </label>
+          <div class="searchable-select" data-name="supplier_id" data-selected="{{ supplier_id }}">
+            <div class="ss-input-wrap">
+              <input type="text" class="ss-search form-control" placeholder="Search supplier…" autocomplete="off"/>
+              <i class="fas fa-chevron-down ss-arrow"></i>
+            </div>
+            <input type="hidden" name="supplier_id" value="{{ supplier_id }}"/>
+            <div class="ss-dropdown">
+              <div class="ss-option" data-value="">— All Suppliers —</div>
+              {% for s in suppliers %}
+              <div class="ss-option {% if s.get('_synthetic') %}ss-option-synthetic{% endif %}"
+                   data-value="{{ s.id }}">
+                {{ s.name }}{% if s.get('_synthetic') %} <span class="ss-tag">from transactions</span>{% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
         </div>
+
         <div class="form-group">
           <label class="form-label">Date From</label>
           <input type="date" name="date_from" class="form-control" value="{{ date_from }}"/>
         </div>
+
         <div class="form-group">
           <label class="form-label">Date To</label>
           <input type="date" name="date_to" class="form-control" value="{{ date_to }}"/>
         </div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div style="flex:1">
-          <input type="text" name="q" value="{{ q }}" placeholder="🔍  Search description or reference…"
-                 class="form-control" style="max-width:380px"/>
+
+      </div>{# /grid #}
+
+      <div style="display:flex;gap:10px;align-items:center;margin-top:14px">
+        <div style="position:relative;flex:1;max-width:360px">
+          <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);font-size:13px"></i>
+          <input type="text" name="q" value="{{ q }}"
+                 placeholder="Search description or reference…"
+                 class="form-control" style="padding-left:36px"/>
         </div>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Generate Statement</button>
-        {% if has_filter %}
-        <a href="{{ url_for('statements.index') }}" class="btn btn-outline"><i class="fas fa-times"></i> Clear</a>
-        {% endif %}
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-file-invoice-dollar"></i> Generate Statement
+        </button>
       </div>
     </form>
   </div>
 </div>
 
-{# ── ENTITY HEADER (shown when entity selected) ──────────── #}
+{# ════════════════════════════════════════════════════════════
+   WHEN AN ENTITY IS SELECTED — show statement
+   ════════════════════════════════════════════════════════════ #}
 {% if entity and entity_type %}
-<div class="stmt-entity-header no-print" style="margin-bottom:16px">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
-    <div style="display:flex;align-items:center;gap:14px">
-      <div class="stmt-entity-avatar">
-        <i class="fas fa-{{ 'building' if entity_type=='company' else 'user' if entity_type=='customer' else 'truck' }}"></i>
-      </div>
+
+{# ── PRINT HEADER (only visible when printing) ────────────── #}
+<div class="print-only" style="margin-bottom:24px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;border-bottom:3px solid var(--navy)">
+    <div style="display:flex;align-items:center;gap:16px">
+      <img src="{{ url_for('static', filename='images/logo_dark.png') }}"
+           style="height:54px;width:auto;display:block"/>
       <div>
-        <div style="font-size:11px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px;font-weight:700">
-          {{ entity_type | capitalize }} Statement
-          {% if entity_type == 'supplier' %}<span style="color:var(--red-mid)"> — INTERNAL</span>{% endif %}
-        </div>
-        <div style="font-size:22px;font-weight:800;color:var(--navy);font-family:var(--font-hd)">{{ entity.name }}</div>
-        <div style="font-size:12.5px;color:var(--gray-500)">
-          {% if entity.get('city') %}{{ entity.city }}{% if entity.get('country') %}, {{ entity.country }}{% endif %} · {% endif %}
-          {% if entity.get('phone') %}{{ entity.phone }} · {% endif %}
-          {% if entity.get('email') %}{{ entity.email }}{% endif %}
-        </div>
+        <div style="font-size:17px;font-weight:800;color:var(--navy);font-family:'Playfair Display',serif">Alsondos Travel &amp; Tourism</div>
+        <div style="font-size:11px;color:#6b7280">Amman, Jordan · Travel &amp; Tourism Agency</div>
       </div>
     </div>
-    {# Summary KPIs #}
+    <div style="text-align:right">
+      <div style="font-size:28px;font-weight:700;color:var(--navy);font-family:'Playfair Display',serif;line-height:1">
+        ACCOUNT STATEMENT
+      </div>
+      <div style="font-size:12px;color:#6b7280;margin-top:4px">
+        Generated: {% set now_stub = '' %}{{ date_from or 'All dates' }}{% if date_to %} — {{ date_to }}{% endif %}
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px 0;border-bottom:1px solid #e5e7eb">
+    <div>
+      <div style="font-size:9.5px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px">Account</div>
+      <div style="font-size:20px;font-weight:700;color:var(--navy)">{{ entity.name }}</div>
+      {% if entity.get('city') %}
+      <div style="font-size:12px;color:#6b7280">{{ entity.city }}{% if entity.get('country') %}, {{ entity.country }}{% endif %}</div>
+      {% endif %}
+      {% if entity.get('phone') %}<div style="font-size:12px;color:#6b7280">{{ entity.phone }}</div>{% endif %}
+      {% if entity.get('email') %}<div style="font-size:12px;color:#6b7280">{{ entity.email }}</div>{% endif %}
+    </div>
     {% if summary %}
-    <div style="display:flex;gap:18px;flex-wrap:wrap">
+    <div style="text-align:right">
+      <div style="font-size:9.5px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px">Summary</div>
       {% if entity_type != 'supplier' %}
-      <div class="stmt-kpi">
-        <div class="stmt-kpi-val">{{ summary.total_invoiced | jod }}</div>
-        <div class="stmt-kpi-lbl">Total Invoiced</div>
-      </div>
-      <div class="stmt-kpi">
-        <div class="stmt-kpi-val" style="color:var(--success)">{{ summary.total_paid | jod }}</div>
-        <div class="stmt-kpi-lbl">Paid</div>
-      </div>
-      <div class="stmt-kpi stmt-kpi-outstanding">
-        <div class="stmt-kpi-val" style="color:{{ 'var(--success)' if summary.outstanding <= 0 else 'var(--red-mid)' }}">
-          {{ summary.outstanding | jod }}
-        </div>
-        <div class="stmt-kpi-lbl">Outstanding</div>
-      </div>
+      <table style="font-size:13px;margin-left:auto">
+        <tr><td style="color:#6b7280;padding-right:16px">Total Invoiced</td><td style="font-weight:700;color:var(--navy)">{{ summary.total_invoiced | jod }}</td></tr>
+        <tr><td style="color:#6b7280;padding-right:16px">Total Paid</td><td style="font-weight:700;color:#059669">{{ summary.total_paid | jod }}</td></tr>
+        <tr style="border-top:1px solid #e5e7eb">
+          <td style="color:#6b7280;padding-right:16px;padding-top:4px">Outstanding</td>
+          <td style="font-weight:800;font-size:15px;color:{{ '#059669' if summary.outstanding <= 0 else '#b91c1c' }};padding-top:4px">
+            {{ summary.outstanding | jod }}
+          </td>
+        </tr>
+      </table>
       {% else %}
-      <div class="stmt-kpi">
-        <div class="stmt-kpi-val" style="color:var(--red-mid)">{{ summary.total_invoiced | jod }}</div>
-        <div class="stmt-kpi-lbl">Total Purchases</div>
-      </div>
+      <div style="font-size:15px;font-weight:800;color:#b91c1c">Total: {{ summary.total_invoiced | jod }}</div>
       {% endif %}
     </div>
     {% endif %}
   </div>
 </div>
 
-{# ── PRINTABLE STATEMENT HEADER ───────────────────────────── #}
-<div class="print-only stmt-print-header">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;border-bottom:3px solid var(--navy);margin-bottom:22px">
-    <div style="display:flex;align-items:center;gap:16px">
-      <img src="{{ url_for('static', filename='images/logo_dark.png') }}" style="height:50px;width:auto"/>
+{# ── SCREEN ENTITY HEADER ─────────────────────────────────── #}
+<div class="no-print" style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px 22px;margin-bottom:18px;box-shadow:var(--shadow-sm)">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--gold-light);flex-shrink:0">
+        <i class="fas fa-{{ 'building' if entity_type=='company' else 'user' if entity_type=='customer' else 'truck' }}"></i>
+      </div>
       <div>
-        <div style="font-size:16px;font-weight:800;color:var(--navy)">Alsondos Travel & Tourism</div>
-        <div style="font-size:11.5px;color:var(--gray-500)">Amman, Jordan</div>
-      </div>
-    </div>
-    <div style="text-align:right">
-      <div style="font-size:26px;font-weight:700;color:var(--navy);font-family:var(--font-hd)">STATEMENT</div>
-      <div style="font-size:11.5px;color:var(--gray-500)">
-        {% if date_from or date_to %}{{ date_from or '—' }} to {{ date_to or '—' }}{% else %}All Dates{% endif %}
-      </div>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px">
-    <div>
-      <div style="font-size:10px;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px">Account</div>
-      <div style="font-size:18px;font-weight:700;color:var(--navy)">{{ entity.name }}</div>
-      <div style="font-size:12px;color:var(--gray-500)">
-        {% if entity.get('city') %}{{ entity.city }}{% if entity.get('country') %}, {{ entity.country }}{% endif %}<br/>{% endif %}
-        {% if entity.get('phone') %}{{ entity.phone }}<br/>{% endif %}
-        {% if entity.get('email') %}{{ entity.email }}{% endif %}
+        <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px;font-weight:700">
+          {{ entity_type | capitalize }} Statement
+          {% if entity_type == 'supplier' %}<span style="color:var(--red-mid)"> · INTERNAL</span>{% endif %}
+          {% if entity.get('_synthetic') %}<span style="color:var(--warning)"> · From Transactions</span>{% endif %}
+        </div>
+        <div style="font-size:21px;font-weight:800;color:var(--navy);font-family:var(--font-hd)">{{ entity.name }}</div>
+        <div style="font-size:12px;color:var(--gray-500)">
+          {% if entity.get('city') %}{{ entity.city }}{% if entity.get('country') %}, {{ entity.country }}{% endif %} · {% endif %}
+          {% if entity.get('phone') %}{{ entity.phone }}{% endif %}
+        </div>
       </div>
     </div>
     {% if summary %}
-    <div style="text-align:right">
-      <div style="font-size:10px;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px">Summary</div>
+    <div style="display:flex;gap:0;border:1px solid var(--gray-200);border-radius:var(--radius-sm);overflow:hidden">
       {% if entity_type != 'supplier' %}
-      <div style="font-size:12.5px;color:var(--gray-600)"><strong>Total Invoiced:</strong> {{ summary.total_invoiced | jod }}</div>
-      <div style="font-size:12.5px;color:var(--gray-600)"><strong>Total Paid:</strong> {{ summary.total_paid | jod }}</div>
-      <div style="font-size:14px;font-weight:700;color:var(--red-mid)"><strong>Outstanding:</strong> {{ summary.outstanding | jod }}</div>
+      <div style="padding:12px 20px;border-right:1px solid var(--gray-200);text-align:center">
+        <div style="font-size:17px;font-weight:800;color:var(--navy);font-family:var(--font-hd)">{{ summary.total_invoiced | jod }}</div>
+        <div style="font-size:10.5px;color:var(--gray-400);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Invoiced</div>
+      </div>
+      <div style="padding:12px 20px;border-right:1px solid var(--gray-200);text-align:center">
+        <div style="font-size:17px;font-weight:800;color:var(--success);font-family:var(--font-hd)">{{ summary.total_paid | jod }}</div>
+        <div style="font-size:10.5px;color:var(--gray-400);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Collected</div>
+      </div>
+      <div style="padding:12px 20px;text-align:center;background:{{ 'var(--success-bg)' if summary.outstanding<=0 else 'var(--danger-bg)' }}">
+        <div style="font-size:17px;font-weight:800;color:{{ 'var(--success)' if summary.outstanding<=0 else 'var(--red-mid)' }};font-family:var(--font-hd)">{{ summary.outstanding | jod }}</div>
+        <div style="font-size:10.5px;color:{{ 'var(--success)' if summary.outstanding<=0 else 'var(--red-mid)' }};font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Outstanding</div>
+      </div>
       {% else %}
-      <div style="font-size:14px;font-weight:700;color:var(--red-mid)"><strong>Total Purchases:</strong> {{ summary.total_invoiced | jod }}</div>
+      <div style="padding:12px 24px;text-align:center;background:var(--danger-bg)">
+        <div style="font-size:17px;font-weight:800;color:var(--red-mid);font-family:var(--font-hd)">{{ summary.total_invoiced | jod }}</div>
+        <div style="font-size:10.5px;color:var(--red-mid);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Total Purchases</div>
+      </div>
       {% endif %}
     </div>
     {% endif %}
@@ -170,21 +241,19 @@
 </div>
 
 {# ── LEDGER TABLE ─────────────────────────────────────────── #}
-<div class="card">
+<div class="card stmt-card">
   <div class="card-header no-print">
     <div class="card-title">
-      <i class="fas fa-table"></i> 
-      {% if entity_type == 'supplier' %}Purchase Ledger — {{ entity.name }}
-      {% else %}Account Ledger — {{ entity.name }}{% endif %}
+      <i class="fas fa-table-list"></i>
+      {% if entity_type == 'supplier' %}Purchase Ledger{% else %}Account Ledger{% endif %}
+      <span style="font-size:12px;color:var(--gray-400);font-weight:400;margin-left:6px">{{ ledger|length }} entries</span>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      {% if date_from or date_to %}
-      <span style="font-size:12px;color:var(--gray-400)">
-        {{ date_from | dateformat if date_from else 'All' }} — {{ date_to | dateformat if date_to else 'All' }}
-      </span>
-      {% endif %}
-      <span style="font-size:12px;color:var(--gray-400)">{{ ledger|length }} entries</span>
+    {% if date_from or date_to %}
+    <div style="font-size:12.5px;color:var(--gray-500)">
+      <i class="fas fa-calendar-alt" style="margin-right:4px;color:var(--gold)"></i>
+      {{ date_from | dateformat if date_from else 'All' }} — {{ date_to | dateformat if date_to else 'Present' }}
     </div>
+    {% endif %}
   </div>
 
   {% if ledger %}
@@ -193,44 +262,41 @@
       <thead>
         <tr>
           <th>Date</th>
-          <th>Reference</th>
+          <th>Ref #</th>
           <th>Description</th>
-          {% if entity_type == 'supplier' %}
-          <th style="text-align:right">Purchase (JOD)</th>
-          {% else %}
-          <th style="text-align:right">Debit (JOD)</th>
-          <th style="text-align:right">Credit (JOD)</th>
-          {% endif %}
-          <th style="text-align:right">Balance (JOD)</th>
+          <th>Status</th>
+          <th style="text-align:right">Amount (JOD)</th>
+          <th style="text-align:right">Paid (JOD)</th>
+          <th style="text-align:right">Remaining (JOD)</th>
         </tr>
       </thead>
       <tbody>
-      {% set ns = namespace(running=0) %}
       {% for row in ledger %}
-      <tr class="stmt-row-{{ row.type }}">
-        <td style="white-space:nowrap;font-size:13px">{{ row.date | dateformat if row.date else '—' }}</td>
+      <tr class="stmt-row stmt-row-{{ row.type }}">
+        <td class="stmt-date">{{ row.date | dateformat if row.date else '—' }}</td>
+        <td><span class="stmt-ref">{{ row.ref }}</span></td>
         <td>
-          <span class="stmt-ref">{{ row.ref }}</span>
-        </td>
-        <td style="font-size:13.5px">
-          {% if row.type == 'invoice' %}
-          <i class="fas fa-file-invoice" style="color:var(--red-mid);margin-right:6px;font-size:11px"></i>
-          {% elif row.type == 'payment' %}
-          <i class="fas fa-check-circle" style="color:var(--success);margin-right:6px;font-size:11px"></i>
-          {% else %}
-          <i class="fas fa-shopping-cart" style="color:var(--info);margin-right:6px;font-size:11px"></i>
+          <div style="font-size:13.5px;font-weight:500;color:var(--gray-900)">{{ row.description }}</div>
+          {% if row.pay_refs %}
+          <div style="font-size:11px;color:var(--success);margin-top:2px">
+            <i class="fas fa-check-circle" style="font-size:10px"></i> {{ row.pay_refs }}
+          </div>
           {% endif %}
-          {{ row.description }}
         </td>
-        {% if entity_type == 'supplier' %}
-        <td class="stmt-dr" style="text-align:right">{{ row.debit | jod if row.debit else '—' }}</td>
-        {% else %}
-        <td class="stmt-dr" style="text-align:right">{{ row.debit | jod if row.debit else '—' }}</td>
-        <td class="stmt-cr" style="text-align:right">{{ row.credit | jod if row.credit else '—' }}</td>
-        {% endif %}
+        <td>
+          {% if row.status %}
+          <span class="badge badge-{{ row.status | lower }}">{{ row.status }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td style="text-align:right;font-weight:700;color:var(--navy);font-size:14px">
+          {{ row.amount | jod if row.amount else '—' }}
+        </td>
+        <td style="text-align:right;font-weight:700;color:var(--success);font-size:14px">
+          {{ row.paid | jod if row.paid else '—' }}
+        </td>
         <td style="text-align:right">
-          <span class="stmt-bal-pill {{ 'positive' if row.balance <= 0 else 'negative' }}">
-            {{ row.balance | jod }}
+          <span class="stmt-bal-pill {{ 'zero' if row.remaining == 0 else 'positive' if row.remaining < 0 else 'negative' }}">
+            {{ row.remaining | jod }}
           </span>
         </td>
       </tr>
@@ -238,17 +304,18 @@
       </tbody>
       <tfoot>
         <tr class="stmt-totals-row">
-          <td colspan="{{ 3 if entity_type == 'supplier' else 3 }}" style="font-weight:700;font-size:13px;color:var(--navy)">
-            TOTALS
+          <td colspan="4" style="font-weight:800;font-size:13px;color:rgba(255,255,255,.9);letter-spacing:.5px">
+            TOTALS &nbsp;·&nbsp; {{ ledger|length }} transactions
           </td>
-          {% if entity_type == 'supplier' %}
-          <td style="text-align:right;font-weight:800;color:var(--red-mid);font-size:14px">{{ summary.total_invoiced | jod }}</td>
-          {% else %}
-          <td style="text-align:right;font-weight:800;color:var(--red-mid);font-size:14px">{{ summary.total_invoiced | jod }}</td>
-          <td style="text-align:right;font-weight:800;color:var(--success);font-size:14px">{{ summary.total_paid | jod }}</td>
-          {% endif %}
+          <td style="text-align:right;font-weight:800;color:#fff;font-size:15px;font-family:var(--font-hd)">
+            {{ summary.total_invoiced | jod }}
+          </td>
+          <td style="text-align:right;font-weight:800;color:#86efac;font-size:15px;font-family:var(--font-hd)">
+            {{ summary.total_paid | jod }}
+          </td>
           <td style="text-align:right">
-            <span class="stmt-bal-pill {{ 'positive' if summary.outstanding <= 0 else 'negative' }}" style="font-size:14px;padding:5px 13px">
+            <span class="stmt-bal-pill {{ 'zero' if summary.outstanding==0 else 'positive' if summary.outstanding<0 else 'negative' }}"
+                  style="font-size:14px;padding:5px 14px;font-weight:800">
               {{ summary.outstanding | jod }}
             </span>
           </td>
@@ -257,65 +324,85 @@
     </table>
   </div>
 
-  {# Print footer #}
-  <div class="print-only" style="padding:18px 22px;border-top:1px solid var(--gray-200);margin-top:8px">
-    <div style="display:flex;justify-content:space-between;margin-bottom:30px">
+  {# ── Print signature footer ──────────────────────────────── #}
+  <div class="print-only" style="padding:20px 22px;border-top:1px solid #e5e7eb">
+    <div style="display:flex;justify-content:space-between;margin-bottom:36px">
       <div>
-        <div style="font-size:10px;color:var(--gray-400);margin-bottom:4px">AUTHORIZED SIGNATURE</div>
-        <div style="width:200px;border-bottom:1px solid var(--gray-400);margin-bottom:4px"></div>
-        <div style="font-size:11px;color:var(--gray-500)">Alsondos Travel & Tourism</div>
+        <div style="font-size:9.5px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Authorized Signature</div>
+        <div style="width:220px;border-bottom:1.5px solid #374151"></div>
+        <div style="font-size:11px;color:#6b7280;margin-top:5px">Alsondos Travel &amp; Tourism</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:10px;color:var(--gray-400);margin-bottom:4px">CLIENT / SUPPLIER SIGNATURE</div>
-        <div style="width:200px;border-bottom:1px solid var(--gray-400);margin-bottom:4px"></div>
-        <div style="font-size:11px;color:var(--gray-500)">Date: _______________</div>
+        <div style="font-size:9.5px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+          {{ entity_type | capitalize }} Signature
+        </div>
+        <div style="width:220px;border-bottom:1.5px solid #374151;margin-left:auto"></div>
+        <div style="font-size:11px;color:#6b7280;margin-top:5px">Date: _______________</div>
       </div>
     </div>
-    <div style="text-align:center;font-size:10.5px;color:var(--gray-400);border-top:1px solid var(--gray-200);padding-top:10px">
-      Alsondos Travel & Tourism · Amman, Jordan · Statement generated automatically by ERP System
+    <div style="text-align:center;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px;line-height:1.6">
+      Alsondos Travel &amp; Tourism · Amman, Jordan<br/>
+      This statement is computer-generated and shows selling amounts only.
+      {% if entity_type != 'supplier' %}Net cost and profit are not disclosed.{% endif %}
     </div>
   </div>
 
   {% else %}
-  <div class="empty-state" style="padding:50px 20px">
+  <div class="empty-state" style="padding:48px 20px">
     <div class="empty-state-icon"><i class="fas fa-file-invoice-dollar"></i></div>
     <h3>No transactions found</h3>
-    <p>No entries match the selected filters and date range.</p>
+    <p>No entries match this account for the selected filters and date range.</p>
   </div>
   {% endif %}
 </div>
 
+{# ─── END entity selected ───────────────────────────────── #}
+
 {% elif has_filter %}
-{# Entity not found #}
 <div class="card">
-  <div class="empty-state" style="padding:50px 20px">
+  <div class="empty-state" style="padding:48px 20px">
     <div class="empty-state-icon"><i class="fas fa-search"></i></div>
     <h3>Entity not found</h3>
-    <p>The selected entity could not be found. Please try again.</p>
+    <p>The selected entity could not be loaded. Please try again.</p>
   </div>
 </div>
 
 {% else %}
-{# No filter yet — show prompt #}
-<div class="card" style="border:2px dashed var(--gray-200)">
-  <div style="text-align:center;padding:60px 30px">
-    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--gold-light);margin:0 auto 20px">
-      <i class="fas fa-file-invoice-dollar"></i>
+{# ── No filter yet — prompt screen ────────────────────────── #}
+<div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));border-radius:var(--radius-lg);padding:36px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;box-shadow:var(--shadow-lg)">
+  <div>
+    <div style="font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:8px">Account Statements</div>
+    <div style="font-family:var(--font-hd);font-size:24px;font-weight:700;color:var(--white);margin-bottom:8px">Select an account to generate a statement</div>
+    <div style="font-size:13.5px;color:rgba(255,255,255,.55);max-width:500px;line-height:1.7">
+      Choose a <strong style="color:var(--gold-light)">company</strong>, <strong style="color:var(--gold-light)">customer</strong>, or <strong style="color:var(--gold-light)">supplier</strong> from the filters above.
+      Statements are generated live from your transactions and payments — no manual entry needed.
     </div>
-    <h2 style="font-family:var(--font-hd);font-size:22px;color:var(--navy);margin-bottom:10px">Select an Account</h2>
-    <p style="color:var(--gray-500);font-size:14px;max-width:440px;margin:0 auto">
-      Choose a <strong>company</strong>, <strong>customer</strong>, or <strong>supplier</strong> from the filters above 
-      to generate their account statement with live balance calculations.
-    </p>
-    <div style="display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap">
-      {% for c in companies[:5] %}
-      <a href="{{ url_for('statements.index') }}?company_id={{ c.id }}" 
-         class="btn btn-outline btn-sm"><i class="fas fa-building"></i> {{ c.name }}</a>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      {% for c in companies[:6] %}
+      <a href="?company_id={{ c.id }}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;color:rgba(255,255,255,.8);font-size:12.5px;text-decoration:none;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">
+        <i class="fas fa-building" style="font-size:11px;color:var(--gold-light)"></i> {{ c.name }}
+      </a>
       {% endfor %}
-      {% for c in customers[:5] %}
-      <a href="{{ url_for('statements.index') }}?customer_id={{ c.id }}" 
-         class="btn btn-outline btn-sm"><i class="fas fa-user"></i> {{ c.name }}</a>
+      {% for c in customers[:4] %}
+      <a href="?customer_id={{ c.id }}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;color:rgba(255,255,255,.8);font-size:12.5px;text-decoration:none;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">
+        <i class="fas fa-user" style="font-size:11px;color:var(--gold-light)"></i> {{ c.name }}
+      </a>
       {% endfor %}
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;min-width:180px">
+    <div style="text-align:center;color:rgba(255,255,255,.35);font-size:10.5px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Quick Stats</div>
+    <div style="background:rgba(255,255,255,.08);border-radius:var(--radius-sm);padding:12px 16px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--gold-light);font-family:var(--font-hd)">{{ companies|length }}</div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Companies</div>
+    </div>
+    <div style="background:rgba(255,255,255,.08);border-radius:var(--radius-sm);padding:12px 16px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--gold-light);font-family:var(--font-hd)">{{ customers|length }}</div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Customers</div>
+    </div>
+    <div style="background:rgba(255,255,255,.08);border-radius:var(--radius-sm);padding:12px 16px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--gold-light);font-family:var(--font-hd)">{{ suppliers|length }}</div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Suppliers</div>
     </div>
   </div>
 </div>
@@ -323,18 +410,66 @@
 
 {% endblock %}
 
-{% block extra_js %}
-<script>
-function clearOthers(keepField) {
-  const fields = ['company_id', 'customer_id', 'supplier_id'];
-  fields.forEach(f => {
-    if (f !== keepField) {
-      const el = document.querySelector('[name="' + f + '"]');
-      if (el) el.value = '';
-    }
+{% block extra_js %}<script>
+/* ── Searchable Select Component ─────────────────────────── */
+document.querySelectorAll('.searchable-select').forEach(function(wrap) {
+  var input    = wrap.querySelector('.ss-search');
+  var hidden   = wrap.querySelector('input[type=hidden]');
+  var dropdown = wrap.querySelector('.ss-dropdown');
+  var arrow    = wrap.querySelector('.ss-arrow');
+  var options  = Array.from(wrap.querySelectorAll('.ss-option'));
+  var selected = wrap.dataset.selected || '';
+
+  // Init display value
+  var selOpt = options.find(function(o){ return o.dataset.value === selected; });
+  if (selOpt && selected) {
+    input.value = selOpt.textContent.replace('from transactions','').trim();
+  }
+
+  function openDD() {
+    dropdown.classList.add('open');
+    arrow.style.transform = 'rotate(180deg)';
+    filterOptions('');
+  }
+  function closeDD() {
+    dropdown.classList.remove('open');
+    arrow.style.transform = '';
+  }
+  function filterOptions(q) {
+    options.forEach(function(opt) {
+      var txt = opt.textContent.toLowerCase();
+      opt.style.display = (!q || txt.includes(q.toLowerCase())) ? '' : 'none';
+    });
+  }
+  function selectOpt(opt) {
+    hidden.value = opt.dataset.value;
+    input.value  = opt.dataset.value ? opt.textContent.replace('from transactions','').trim() : '';
+    // Clear sibling selects
+    var fname = wrap.dataset.name;
+    var allPeers = ['company_id','customer_id','supplier_id'];
+    allPeers.forEach(function(n){
+      if (n !== fname) {
+        var peer = document.querySelector('.searchable-select[data-name="'+n+'"] input[type=hidden]');
+        var peerSearch = document.querySelector('.searchable-select[data-name="'+n+'"] .ss-search');
+        if (peer) peer.value = '';
+        if (peerSearch) peerSearch.value = '';
+      }
+    });
+    closeDD();
+    // Auto-submit
+    document.getElementById('stmt-form').submit();
+  }
+
+  input.addEventListener('focus', openDD);
+  input.addEventListener('input', function(){ filterOptions(this.value); });
+  options.forEach(function(opt){
+    opt.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      selectOpt(opt);
+    });
   });
-  // Auto-submit
-  document.getElementById('stmt-filter-form').submit();
-}
-</script>
-{% endblock %}
+  document.addEventListener('click', function(e){
+    if (!wrap.contains(e.target)) closeDD();
+  });
+});
+</script>{% endblock %}

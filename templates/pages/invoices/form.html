@@ -78,7 +78,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">Link to Transaction</label>
-        <select name="transaction_id" class="form-control">
+        <select name="transaction_id" class="form-control ss-native">
           <option value="">— None —</option>
           {% for t in txns %}
           <option value="{{ t.id }}" {% if invoice.get('transaction_id')==t.id %}selected{% endif %}>
